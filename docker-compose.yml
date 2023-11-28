@@ -1,0 +1,17 @@
+version: '3'
+services:
+  meetq:
+    restart: always
+    build: .
+    ports:
+      - '5050:3030'
+    env_file:
+      - docker.env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+    hostname: redis
