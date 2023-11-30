@@ -4,8 +4,6 @@ import { Types } from 'mongoose';
 import { appLanguage } from '../enum/app.enum';
 import { userRole } from '../enum/user.enum';
 import { UnAuthorizedError } from '../errors';
-
-const jwtSecret = process.env.JWT_SECRET; 
 interface UserPayload {
   id: Types.ObjectId;
   email: string;
@@ -33,10 +31,12 @@ const auth = (req: Request, res: Response, next: NextFunction) => {
     if (splitedToken.length !== 2 && splitedToken[0] !== 'Bearer') {
       return next(error);
     }
-    const payload = jwt.verify(splitedToken[1], jwtSecret) as UserPayload;
+    const payload = jwt.verify(splitedToken[1], process.env.JWT_SECRET) as UserPayload;
+    console.log('payload', splitedToken);
     req.currentUser = payload;
     return next();
   } catch (err) {
+    console.error('err in auth', err);
     const error = new UnAuthorizedError();
     return next(error);
   }

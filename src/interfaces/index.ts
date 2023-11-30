@@ -1,2 +1,3 @@
 export { ICustomError } from './custom-error.interface';
-export { IUser } from './user.interface'
+export { IPatient } from './patient.interface';
+export { IOffering} from './offering.interface';

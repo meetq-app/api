@@ -1,30 +1,29 @@
-import { ObjectId, Schema } from 'mongoose';
+import { Document, Model, ObjectId, Schema, Types } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { redisClient } from '../db/redis';
 import { InvalidCreedentialsdError } from '../errors';
-import { IUser } from '../interfaces';
-import { IUserService } from '../interfaces/user-service.interface';
-import User from '../models/user.model';
 import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
 
-class UserService implements IUserService {
+export abstract class UserService{
+  userModel: Model<Document>;
+
   userVerificationPrefix = 'USER_VERIFY';
   userVerificationTTL = 900; // 15 minutes
 
-  async findUserById(id: Schema.Types.ObjectId): Promise<IUser> {
-    const user: IUser = await User.findOne({ id });
+  async findUserById(id: Types.ObjectId): Promise<Document> {
+    const user = await this.userModel.findById(id);
     return user;
   }
 
-  async findUserByEmail(email: string): Promise<IUser> {
-    const user: IUser = await User.findOne({ email });
+  async findUserByEmail(email: string): Promise<Document> {
+    const user = await this.userModel.findOne({ email });
     return user;
   }
 
-  async createUser(email: string): Promise<IUser> {
+  async createUser(email: string): Promise<Document> {
     try {
-      const user = new User({ email });
+      const user = new this.userModel({ email });
       const newUser = await user.save();
       return newUser;
     } catch (err) {
@@ -62,12 +61,12 @@ class UserService implements IUserService {
     }
   }
 
-  generateJWT(email: string, id: string): string {
+  generateJWT(email: string, id: string, role: userRole): string {
     const token = jwt.sign(
       {
         id,
         email,
-        role: userRole.USER
+        role,
       },
       process.env.JWT_SECRET,
     );
@@ -75,5 +74,3 @@ class UserService implements IUserService {
     return token;
   }
 }
-
-export default new UserService();

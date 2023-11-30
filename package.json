@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
+    "seed": " ts-node-dev src/db/seed/index.ts",
     "go": "rm -rf dist && tsc && node -r dotenv/config dist/app/server",
     "start": "tsc && npm test && node -r dotenv/config dist/app/server",
     "build": "tsc",
