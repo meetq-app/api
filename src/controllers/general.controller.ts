@@ -7,7 +7,18 @@ import patientService from '../services/patient.service';
 export class GeneralController {
   async getOfferings(req: Request, res: Response, next: NextFunction) {
     try {
-      const offerings = await Offering.find({});
+      const lang = req.lang;
+
+      const offerings = await Offering.aggregate([
+        {
+          $project: {
+            _id: 1,
+            name: `$name.${lang}`,
+            description: `$description.${lang}`
+          }
+        }
+      ]);
+      
       res.status(200).send(offerings);
     } catch (err) {
       return next(err);

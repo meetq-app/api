@@ -3,7 +3,6 @@ import { IOffering } from './offering.interface';
 import { IUser } from './user.interface';
 
 export interface IDoctor extends IUser {
-    country?: userCountry,
     info?: string,
     certificates?: Array<string>
     offerings?: [

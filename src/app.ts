@@ -1,9 +1,9 @@
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import hpp from 'hpp';
 import helmet from 'helmet';
 import express from 'express';
 import path from 'path';
-
 import errorHandler from './services/error-hadlers.serivice';
 import v1 from './routes/v1';
 import detectLanguage from './middleware/detect-language.middlware';
@@ -23,6 +23,7 @@ class App {
     this.express.use(bodyParser.json());
     this.express.use(bodyParser.urlencoded({ extended: false }));
     this.express.use(helmet());
+    this.express.use(hpp());
     this.express.use(express.static(path.join(__dirname, 'public')));
     this.express.use(detectLanguage);
   }

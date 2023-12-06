@@ -7,6 +7,8 @@ export interface IUser{
   fullName?: string;
   gender? : userGender;
   avatar?: string;
+  country?: userCountry;
+  timezone? string;
   balance: number;
   currency: userCurrency;
 }
