@@ -32,3 +32,8 @@ export enum userCountry {
   UK = 'UK',
   UAE = 'UAE'
 }
+
+export enum activeStatus {
+  ACTIVE = 1,
+  PASSIVE = 2
+}

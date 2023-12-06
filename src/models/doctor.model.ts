@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose';
-import { userCurrency } from '../enum/user.enum';
+import { activeStatus, userCurrency } from '../enum/user.enum';
 import { IDoctor } from '../interfaces/doctor.interface';
 
 const doctorSchema = new Schema<IDoctor>({
@@ -27,6 +27,10 @@ const doctorSchema = new Schema<IDoctor>({
     type: Number,
     default: 0,
   },
+  activStatus: {
+    type: Number,
+    default: activeStatus.ACTIVE,
+  },
   currency: {
     type: String,
     default: userCurrency.AMD,
@@ -47,6 +51,15 @@ const doctorSchema = new Schema<IDoctor>({
         price: Number,
       },
     ],
+  },
+  schedule: {
+    sunday: [{ from: String, to: String }],
+    monday: [{ from: String, to: String }],
+    tuesday: [{ from: String, to: String }],
+    wednesday: [{ from: String, to: String }],
+    thursday: [{ from: String, to: String }],
+    friday: [{ from: String, to: String }],
+    saturday: [{ from: String, to: String }],
   },
 });
 

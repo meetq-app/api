@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { userCurrency, userGender } from '../enum/user.enum';
+import { userCountry, userCurrency, userGender } from '../enum/user.enum';
 
 export interface IUser{
   _id: Types.ObjectId;
@@ -8,7 +8,7 @@ export interface IUser{
   gender? : userGender;
   avatar?: string;
   country?: userCountry;
-  timezone? string;
+  timezone?: string;
   balance: number;
   currency: userCurrency;
 }
