@@ -1,9 +1,11 @@
 import { Document, Model, ObjectId, Schema, Types } from 'mongoose';
+import { v4 as uuid } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { redisClient } from '../db/redis';
 import { InvalidCreedentialsdError } from '../errors';
 import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
+import { join } from 'path';
 
 export abstract class UserService{
   userModel: Model<Document>;
@@ -35,6 +37,18 @@ export abstract class UserService{
         const error = new InvalidCreedentialsdError('Invalid Creedentials', err.errors ?? err.message);
         throw error;
       }
+    }
+  }
+
+  async updateAvatar(id: Types.ObjectId, base64String: string): Promise<string>{
+    try{
+      const filename = `avatar_${uuid()}.png`;
+      const filePath = `/img/avatar/${filename}`;
+      await this.userModel.findByIdAndUpdate(id, {avatar: filePath});
+      const avatar = await HelperService.saveBase64Image(base64String, filePath);
+      return avatar;
+    } catch (e) {
+      throw new Error(e);
     }
   }
 

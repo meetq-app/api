@@ -16,5 +16,6 @@ router
   .post('/verify-login', authCtrl.verifyLogin.bind(authCtrl))
   .get('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.getPatientInfo)
   .patch('/', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientInfo)
+  .patch('/avatar', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientAvatar)
 
 export default router;

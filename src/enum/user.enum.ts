@@ -7,13 +7,13 @@ export enum userRole {
 export enum userGender {
   MALE = 'male',
   FEMALE = 'female',
-  NOT_SPECIFIED = 'not specified'
+  NOT_SPECIFIED = 'not specified',
 }
 
 export enum userLanguage {
   EN = 'en',
   RU = 'ru',
-  AM = 'am'
+  AM = 'am',
 }
 
 export enum userCurrency {
@@ -30,10 +30,16 @@ export enum userCountry {
   RUSSIA = 'Russia',
   US = 'US',
   UK = 'UK',
-  UAE = 'UAE'
+  UAE = 'UAE',
 }
 
 export enum activeStatus {
   ACTIVE = 1,
-  PASSIVE = 2
+  PASSIVE = 2,
+}
+
+export enum speciality {
+  PSYCHOLOGIST = 'Psychologist',
+  PSYCHOTHERAPIST = 'Psychotherapist',
+  PSYCHIATRIST = 'Psychiatrist'
 }

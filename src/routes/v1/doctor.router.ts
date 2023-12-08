@@ -16,5 +16,7 @@ router
   .post('/verify-login', authCtrl.verifyLogin.bind(authCtrl))
   .get('/me', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.getDoctorInfo)
   .patch('/', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.updateDoctorInfo)
+  .patch('/avatar', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.updateDoctorAvatar)
+  .post('/certificates', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.addDoctorCertificates)
 
 export default router;

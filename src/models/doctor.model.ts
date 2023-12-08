@@ -8,6 +8,9 @@ const doctorSchema = new Schema<IDoctor>({
     minLength: 5,
     maxlength: 50,
   },
+  speciality: {
+    type: String,
+  },
   email: {
     type: String,
     minLength: 10,
@@ -27,7 +30,7 @@ const doctorSchema = new Schema<IDoctor>({
     type: Number,
     default: 0,
   },
-  activStatus: {
+  activeStatus: {
     type: Number,
     default: activeStatus.ACTIVE,
   },
