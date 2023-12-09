@@ -20,7 +20,6 @@ export class DoctorController {
     try {
       const { id } = req.currentUser;
       const updatedDoctor = await doctorService.update(id, req.body);
-      res.status(200).send(updatedDoctor);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {doctor: updatedDoctor}));
     } catch (err) {
       return next(err);
@@ -50,4 +49,32 @@ export class DoctorController {
       return next(err);
     }
   }
+
+  async updateDoctorSchedule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.currentUser;
+      const { schedule } = req.body;
+
+      const updatedSchedule = await doctorService.manageSchedule(id, schedule);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {schedule: updatedSchedule}));
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  async updateDoctorOfferings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.currentUser;
+      const { offerings } = req.body;
+
+      console.log({id});
+      console.log({offerings});
+
+      const updatedofferings = await doctorService.manageOfferings(id, offerings);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {schedule: updatedofferings}));
+    } catch (err) {
+      return next(err);
+    }
+  }
+
 }

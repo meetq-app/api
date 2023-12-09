@@ -11,9 +11,9 @@ export enum userGender {
 }
 
 export enum userLanguage {
+  AM = 'am',
   EN = 'en',
   RU = 'ru',
-  AM = 'am',
 }
 
 export enum userCurrency {

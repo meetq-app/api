@@ -15,7 +15,8 @@ router
   .post('/login', authCtrl.login.bind(authCtrl))
   .post('/verify-login', authCtrl.verifyLogin.bind(authCtrl))
   .get('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.getPatientInfo)
-  .patch('/', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientInfo)
+  .patch('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientInfo)
   .patch('/avatar', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientAvatar)
+  .get('/doctors', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctors)
 
 export default router;

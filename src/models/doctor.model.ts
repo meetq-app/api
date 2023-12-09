@@ -44,13 +44,20 @@ const doctorSchema = new Schema<IDoctor>({
   info: {
     type: String,
   },
+  raiting: {
+    type: Number,
+    default: 5,
+  },
   certificates: {
+    type: [String],
+  },
+  languages: {
     type: [String],
   },
   offerings: {
     type: [
       {
-        offer: Types.ObjectId,
+        offerId: Types.ObjectId,
         price: Number,
       },
     ],

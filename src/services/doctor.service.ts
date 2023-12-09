@@ -6,6 +6,7 @@ import Doctor from '../models/doctor.model';
 import { UserService } from './user.service';
 import { v4 as uuid } from 'uuid';
 import { HelperService } from './helper.service';
+import { ISchedule } from '../interfaces/schedule.interface';
 
 class DoctorService extends UserService {
   userModel;
@@ -56,7 +57,38 @@ class DoctorService extends UserService {
       await user.save();
 
       const certificateUrls = await Promise.allSettled(saveNase64Certificates);
-      return certificateUrls.map((cert) => ((cert.status === 'fulfilled') ? cert.value : ''));
+      return certificateUrls.map((cert) => (cert.status === 'fulfilled' ? cert.value : ''));
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async manageSchedule(id: Types.ObjectId, schedule: ISchedule): Promise<ISchedule> {
+    try {
+      await this.userModel.findByIdAndUpdate(id, { schedule });
+      return schedule;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async manageOfferings(
+    id: Types.ObjectId,
+    offerings: [
+      {
+        offerId: Types.ObjectId;
+        price: number;
+      },
+    ],
+  ): Promise<
+    Array<{
+      offerId: Types.ObjectId;
+      price: number;
+    }>
+  > {
+    try {
+      await this.userModel.findByIdAndUpdate(id, { offerings });
+      return offerings;
     } catch (e) {
       throw new Error(e);
     }

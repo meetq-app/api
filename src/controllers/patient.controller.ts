@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { respStatus } from '../enum/response.enum';
+import { IUserFilters } from '../interfaces';
 import { HelperService } from '../services/helper.service';
 import patientService from '../services/patient.service';
 
@@ -33,6 +34,23 @@ export class PatientController {
       const avatarPath = await patientService.updateAvatar(id, avatar);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {avatar: avatarPath}));
     } catch (err) {
+      return next(err);
+    }
+  }
+
+  async getDoctors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.currentUser;
+      //@ts-ignore
+      req.query.languages = JSON.parse(req.query.languages);
+      // @ts-ignore
+      req.query.offerings = JSON.parse(req.query.offerings);
+      //@ts-ignore
+      const doctors = await patientService.getDoctors(req.query as IUserFilters); //TODO temp solution untill impliment validatitions
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {doctors}));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in getting doctors ctrl', err);
       return next(err);
     }
   }
