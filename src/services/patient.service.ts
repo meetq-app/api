@@ -1,10 +1,11 @@
-import { NOTFOUND } from 'dns';
 import { Types } from 'mongoose';
+import { appLanguage } from '../enum/app.enum';
 import { userRole } from '../enum/user.enum';
 import { NotFoundError } from '../errors/not-found.error';
 import { IPatient, IUserFilters } from '../interfaces';
 import { IDoctor } from '../interfaces/doctor.interface';
 import Doctor from '../models/doctor.model';
+import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
 import { UserService } from './user.service';
 
@@ -57,10 +58,7 @@ class PatientService extends UserService {
       }
 
       if (userFilters.search) {
-        matchConditions['$or'] = [
-          { fullName: { $regex: userFilters.search, $options: 'i' } }, 
-          { speciality: { $regex: userFilters.search, $options: 'i' } }
-        ];
+        matchConditions['$or'] = [{ fullName: { $regex: userFilters.search, $options: 'i' } }, { speciality: { $regex: userFilters.search, $options: 'i' } }];
       }
 
       const pipeline = [
@@ -94,6 +92,98 @@ class PatientService extends UserService {
 
       const doctors = Doctor.aggregate(pipeline);
       return doctors;
+    } catch (err) {
+      console.error('error in getting doctors', err);
+      throw err;
+    }
+  }
+
+  async getDoctor(id: string, lang: appLanguage): Promise<Partial<IDoctor>> {
+    try {
+      const doctorId = new Types.ObjectId(id);
+      const doctor = await Doctor.aggregate([
+        {
+          $match: {
+            _id: doctorId,
+          },
+        },
+        {
+          $lookup: {
+            from: Offering.collection.name,
+            localField: 'offerings.offerId',
+            foreignField: '_id',
+            as: 'matchedOfferings',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            avatar: 1,
+            fullName: 1,
+            raiting: 1,
+            gender: 1,
+            country: 1,
+            timezone: 1,
+            currency: 1,
+            speciality: 1,
+            certificates: 1,
+            languages: 1,
+            info: 1,
+            offerings: {
+              $map: {
+                input: '$offerings',
+                as: 'offer',
+                in: {
+                  $mergeObjects: [
+                    '$$offer',
+                    {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: '$matchedOfferings',
+                            cond: { $eq: ['$$this._id', '$$offer.offerId'] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            offerings: {
+              $map: {
+                input: '$offerings',
+                as: 'offering',
+                in: {
+                  _id: '$$offering._id',
+                  price: '$$offering.price',
+                  name: `$$offering.name.${lang}`,
+                  description: `$$offering.description.${lang}`,
+                },
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: '$_id',
+            avatar: { $first: '$avatar' },
+            fullName: { $first: '$fullName' },
+            raiting: { $first: '$raiting' },
+            speciality: { $first: '$speciality' },
+            languages: { $first: '$languages' },
+            info: { $first: '$info' },
+            offerings: { $first: '$offerings' },
+          },
+        },
+      ]).exec();
+
+      return doctor[0];
     } catch (err) {
       console.error('error in getting doctors', err);
       throw err;
