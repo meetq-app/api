@@ -10,7 +10,7 @@ export class PatientController {
     try {
       const { id } = req.currentUser;
       const patient = await patientService.findUserById(id);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {patient}));
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { patient }));
     } catch (err) {
       return next(err);
     }
@@ -20,7 +20,7 @@ export class PatientController {
     try {
       const { id } = req.currentUser;
       const updatedPatient = await patientService.update(id, req.body);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {patient: updatedPatient}));
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { patient: updatedPatient }));
     } catch (err) {
       return next(err);
     }
@@ -32,7 +32,7 @@ export class PatientController {
       const { avatar } = req.body;
 
       const avatarPath = await patientService.updateAvatar(id, avatar);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {avatar: avatarPath}));
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { avatar: avatarPath }));
     } catch (err) {
       return next(err);
     }
@@ -42,12 +42,12 @@ export class PatientController {
     try {
       const { id } = req.currentUser;
       //@ts-ignore
-      if(req.query.languages) req.query.languages = JSON.parse(req.query.languages);
+      if (req.query.languages) req.query.languages = JSON.parse(req.query.languages);
       // @ts-ignore
-      if(req.query.offerings) req.query.offerings = JSON.parse(req.query.offerings);
+      if (req.query.offerings) req.query.offerings = JSON.parse(req.query.offerings);
       //@ts-ignore
       const doctors = await patientService.getDoctors(req.query as IUserFilters); //TODO temp solution untill impliment validatitions
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {doctors}));
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctors }));
     } catch (err) {
       console.log(req.query);
       console.error('error in getting doctors ctrl', err);
@@ -60,10 +60,22 @@ export class PatientController {
       const { id: doctorId } = req.params;
       const lang = req.lang;
       const doctor = await patientService.getDoctor(doctorId, lang);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {doctor}));
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctor }));
     } catch (err) {
       console.log(req.query);
-      console.error('error in getting doctors ctrl', err);
+      console.error('error in getting doctor ctrl', err);
+      return next(err);
+    }
+  }
+
+  async getDoctorsTimeSlots(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id: doctorId, date } = req.params;
+      const slots = await patientService.getDoctorsTimeSlotsByDate(doctorId, date);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { slots }));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in getting avialable time slots', err);
       return next(err);
     }
   }

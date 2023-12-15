@@ -1,12 +1,15 @@
 import { Types } from 'mongoose';
 import { appLanguage } from '../enum/app.enum';
+import { meetingStatus } from '../enum/meeting.enum';
 import { userRole } from '../enum/user.enum';
 import { NotFoundError } from '../errors/not-found.error';
-import { IPatient, IUserFilters } from '../interfaces';
+import { IPatient, IUserFilters, TimeSlot } from '../interfaces';
 import { IDoctor } from '../interfaces/doctor.interface';
 import Doctor from '../models/doctor.model';
+import Meeting from '../models/meeting.model';
 import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
+import { HelperService } from './helper.service';
 import { UserService } from './user.service';
 
 class PatientService extends UserService {
@@ -188,6 +191,23 @@ class PatientService extends UserService {
       console.error('error in getting doctors', err);
       throw err;
     }
+  }
+
+  async getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>> {
+    const doctorID = new Types.ObjectId(id);
+    const date = new Date(slotsDate);
+    const dayOfWeek = HelperService.getDayOfWeekFromDate(date);
+
+    const meetings = await Meeting.find({ _id: doctorID, date, status: { $ne: meetingStatus.CANCELED } });
+    const doctor = await Doctor.findById(doctorID);
+    const schedule = doctor.schedule[dayOfWeek];
+    if (schedule.length === 0) {
+      return [];
+    }
+    const bookedTimeSlots = meetings.map(m => m.timeSlot);
+    const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlots);
+    console.log({ meetings, schedule, dayOfWeek, avialableTimeSlots });
+    return avialableTimeSlots;
   }
 }
 

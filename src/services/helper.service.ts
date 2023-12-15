@@ -1,6 +1,7 @@
 import { respStatus } from '../enum/response.enum';
 import fs from 'fs';
 import { join } from 'path';
+import { TimeSlot } from '../interfaces';
 
 export class HelperService {
   static generateRandomSixDigitNumber() {
@@ -31,5 +32,30 @@ export class HelperService {
         }
       });
     });
+  }
+
+  static getDayOfWeekFromDate(date: Date): string {
+    const dayOfWeek = date.getDay();
+
+    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return daysOfWeek[dayOfWeek];
+  }
+
+  static getAvialableTimeSlots(schedule: Array<TimeSlot>, meets: Array<TimeSlot>): Array<TimeSlot> {
+    if(meets.length === 0){
+      return schedule.map(s => ({from: s.from, to: s.to}));
+    }
+
+    const stringifiedSchedule = schedule.map((s) => `${s.from}-${s.to}`);
+    const stringifiedMeets = meets.map((m) => `${m.from}-${m.to}`);
+
+    const avialableSlots = stringifiedSchedule.map((timeSlot) => {
+      if (!stringifiedMeets.includes(timeSlot)) {
+        const [from, to] = timeSlot.split('-');
+        return { from, to };
+      }
+    });
+
+    return avialableSlots.filter(Boolean);
   }
 }

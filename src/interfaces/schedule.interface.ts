@@ -1,11 +1,12 @@
-type Time = string & { format: "HH:MM" };
+export type Time = string;
+export type TimeSlot = {from: Time, to: Time};
 
 export interface ISchedule {
-  sunday: { from: Time; to: Time }[];
-  monday: { from: Time; to: Time }[];
-  tuesday: { from: Time; to: Time }[];
-  wednesday: { from: Time; to: Time }[];
-  thursday: { from: Time; to: Time }[];
-  friday: { from: Time; to: Time }[];
-  saturday: { from: Time; to: Time }[];
+  sunday: TimeSlot[];
+  monday: TimeSlot[];
+  tuesday: TimeSlot[];
+  wednesday: TimeSlot[];
+  thursday: TimeSlot[];
+  friday: TimeSlot[];
+  saturday: TimeSlot[];
 };
