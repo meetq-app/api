@@ -2,9 +2,11 @@ import { Types } from 'mongoose';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
 import { userRole } from '../enum/user.enum';
+import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IPatient, IUserFilters, TimeSlot } from '../interfaces';
 import { IDoctor } from '../interfaces/doctor.interface';
+import { IMeeting } from '../interfaces/meeting.interface';
 import Doctor from '../models/doctor.model';
 import Meeting from '../models/meeting.model';
 import Offering from '../models/offering.model';
@@ -194,20 +196,65 @@ class PatientService extends UserService {
   }
 
   async getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>> {
-    const doctorID = new Types.ObjectId(id);
+    const doctorId = new Types.ObjectId(id);
     const date = new Date(slotsDate);
     const dayOfWeek = HelperService.getDayOfWeekFromDate(date);
 
-    const meetings = await Meeting.find({ _id: doctorID, date, status: { $ne: meetingStatus.CANCELED } });
-    const doctor = await Doctor.findById(doctorID);
+    const meetings = await Meeting.find({ doctorId, date, status: { $ne: meetingStatus.CANCELED } });
+    const doctor = await Doctor.findById(doctorId);
     const schedule = doctor.schedule[dayOfWeek];
     if (schedule.length === 0) {
       return [];
     }
-    const bookedTimeSlots = meetings.map(m => m.timeSlot);
+    const bookedTimeSlots = meetings.map((m) => m.timeSlot);
+    console.log({meetings, schedule, bookedTimeSlots, date, doctorId });
+
     const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlots);
-    console.log({ meetings, schedule, dayOfWeek, avialableTimeSlots });
     return avialableTimeSlots;
+  }
+
+  async bookMeeting(patientId: Types.ObjectId, doctorId: Types.ObjectId, date: Date, timeSlot: TimeSlot, offeringId: Types.ObjectId): Promise<IMeeting> {
+    const doctor = await Doctor.findById(doctorId);
+    const patient = await Patient.findById(patientId);
+
+    console.log(doctor.offerings, offeringId);
+
+    const offering  = doctor.offerings.find(o => o.offerId.equals(offeringId));
+    console.log({offering});
+
+    const isDateFitsRequirment = HelperService.checkIfDateFitsBookingRequirments(date, 2);
+
+    if(!isDateFitsRequirment){
+      throw new InsufficientDataError('insufficient date', []);
+    }
+
+    if(patient.balance < offering.price){ // TODO convert between curencies
+      throw new InsufficientDataError('insufficient balance', []);
+    }
+
+    const avialableSlots = await this.getDoctorsTimeSlotsByDate(doctorId.toString(), date.toISOString().slice(0, 10));
+    console.log({avialableSlots, timeSlot});
+    const isSlotAvialable = HelperService.checkSlotAvialability(avialableSlots, timeSlot);
+
+    if(!isSlotAvialable){
+      throw new InsufficientDataError('insufficient time slot', []);
+    }
+
+    // create transaction reduce patient balace
+    // add new record in transactions collection
+
+    const meeting = new Meeting({
+      patientId,
+      doctorId,
+      date,
+      timeSlot,
+      offeringId,
+      price: offering.price,
+      currency: doctor.currency,
+    })
+
+    await meeting.save();
+    return meeting;
   }
 }
 

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { Types } from 'mongoose';
 import { respStatus } from '../enum/response.enum';
 import { IUserFilters } from '../interfaces';
 import { HelperService } from '../services/helper.service';
@@ -76,6 +77,23 @@ export class PatientController {
     } catch (err) {
       console.log(req.query);
       console.error('error in getting avialable time slots', err);
+      return next(err);
+    }
+  }
+
+  async bookMeeting(req: Request, res: Response, next: NextFunction) {
+    try {
+      const patientId = req.currentUser.id;
+      const { slot } = req.body;
+      const doctorId = new Types.ObjectId(req.body.doctorId);
+      const offerId = new Types.ObjectId(req.body.offerId);
+      const date = new Date(req.body.date);
+
+      const meeting = await patientService.bookMeeting(patientId, doctorId, date, slot, offerId);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meeting }));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in booking a meet', err);
       return next(err);
     }
   }

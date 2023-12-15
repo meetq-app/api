@@ -42,8 +42,8 @@ export class HelperService {
   }
 
   static getAvialableTimeSlots(schedule: Array<TimeSlot>, meets: Array<TimeSlot>): Array<TimeSlot> {
-    if(meets.length === 0){
-      return schedule.map(s => ({from: s.from, to: s.to}));
+    if (meets.length === 0) {
+      return schedule.map((s) => ({ from: s.from, to: s.to }));
     }
 
     const stringifiedSchedule = schedule.map((s) => `${s.from}-${s.to}`);
@@ -57,5 +57,28 @@ export class HelperService {
     });
 
     return avialableSlots.filter(Boolean);
+  }
+
+  static checkSlotAvialability(avialableSlots: Array<TimeSlot>, wantedSlot: TimeSlot): boolean {
+    const stringifiedSlots = avialableSlots.map((s) => `${s.from}-${s.to}`);
+    const stringifiedSlot = `${wantedSlot.from}-${wantedSlot.to}`;
+
+    return stringifiedSlots.includes(stringifiedSlot);
+  }
+
+  static checkIfDateFitsBookingRequirments(date: Date, months: number): boolean {
+    const today = new Date();
+    const isAfterOrEqualToday = date.getTime() >= today.getTime();
+
+    const twoMonthsFromToday = new Date();
+    twoMonthsFromToday.setMonth(twoMonthsFromToday.getMonth() + months);
+
+    const isBeforeTwoMonths = date.getTime() < twoMonthsFromToday.getTime();
+
+    if (!isAfterOrEqualToday || !isBeforeTwoMonths) {
+      return false;
+    }
+
+    return true;
   }
 }

@@ -17,8 +17,9 @@ router
   .get('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.getPatientInfo)
   .patch('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientInfo)
   .patch('/avatar', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientAvatar)
-  .get('/doctors', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctors)
+  .get('/doctors', patientCtrl.getDoctors)
   .get('/doctor/slots/:id/:date', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctorsTimeSlots)
-  .get('/doctor/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctor)
+  .get('/doctor/:id', patientCtrl.getDoctor)
+  .post('/doctor/book', auth, checkUserRole(userRole.PATIENT), patientCtrl.bookMeeting)
 
 export default router;
