@@ -240,7 +240,9 @@ class PatientService extends UserService {
       throw new InsufficientDataError('insufficient time slot', []);
     }
 
-    // create transaction reduce patient balace
+    // TODO create transaction reduce patient balace
+    patient.balance -= offering.price;
+    await patient.save();
     // add new record in transactions collection
 
     const meeting = new Meeting({
