@@ -243,7 +243,7 @@ class PatientService extends UserService {
     // TODO create transaction reduce patient balace
     patient.balance -= offering.price;
     await patient.save();
-    // add new record in transactions collection
+    // TODO add new record in transactions collection
 
     const meeting = new Meeting({
       patientId,
@@ -258,6 +258,8 @@ class PatientService extends UserService {
     await meeting.save();
     return meeting;
   }
+  
+  
 }
 
 export default new PatientService();

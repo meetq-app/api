@@ -6,6 +6,8 @@ import { InvalidCreedentialsdError } from '../errors';
 import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
 import { join } from 'path';
+import { IMeeting } from '../interfaces/meeting.interface';
+import Meeting from '../models/meeting.model';
 
 export abstract class UserService{
   userModel: Model<Document>;
@@ -25,7 +27,7 @@ export abstract class UserService{
 
   async createUser(email: string): Promise<Document> {
     try {
-      const user = new this.userModel({ email });
+      const user = new this.userModel({ email, fullName: email.split('@')[0] });
       const newUser = await user.save();
       return newUser;
     } catch (err) {
@@ -87,4 +89,9 @@ export abstract class UserService{
 
     return token;
   }
+
+  // async cancelMeeting(id: string, canceledBy: userRole): Promise<IMeeting>{
+  //   const meetingId = new Types.ObjectId(id);
+  //   const meeting = await Meeting.findById(meetingId);
+  // }
 }

@@ -41,7 +41,6 @@ export class PatientController {
 
   async getDoctors(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.currentUser;
       //@ts-ignore
       if (req.query.languages) req.query.languages = JSON.parse(req.query.languages);
       // @ts-ignore

@@ -16,16 +16,14 @@ class ErrorHandler {
       return res.status(status).send('something went wrong');
     }
 
-    if (status === 400) {
-      return res.status(status).send(
-        HelperService.formatResponse(respStatus.FAILED, {
-          error: err.message,
-          details: err.details,
-        }),
-      );
-    }
+    return res.status(status).send(
+      HelperService.formatResponse(respStatus.FAILED, {
+        error: err.message,
+        type: err.name,
+        details: err.details,
+      }),
+    );
 
-    res.status(status).send(err.message);
   }
 }
 
