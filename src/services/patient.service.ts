@@ -1,17 +1,20 @@
 import { Types } from 'mongoose';
+import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
 import { userRole } from '../enum/user.enum';
 import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
-import { IPatient, IUserFilters, TimeSlot } from '../interfaces';
+import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot } from '../interfaces';
 import { IDoctor } from '../interfaces/doctor.interface';
 import { IMeeting } from '../interfaces/meeting.interface';
+import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
 import Meeting from '../models/meeting.model';
 import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
 import { HelperService } from './helper.service';
+import { sendMail } from './mail.service';
 import { UserService } from './user.service';
 
 class PatientService extends UserService {
@@ -207,7 +210,7 @@ class PatientService extends UserService {
       return [];
     }
     const bookedTimeSlots = meetings.map((m) => m.timeSlot);
-    console.log({meetings, schedule, bookedTimeSlots, date, doctorId });
+    console.log({ meetings, schedule, bookedTimeSlots, date, doctorId });
 
     const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlots);
     return avialableTimeSlots;
@@ -219,24 +222,25 @@ class PatientService extends UserService {
 
     console.log(doctor.offerings, offeringId);
 
-    const offering  = doctor.offerings.find(o => o.offerId.equals(offeringId));
-    console.log({offering});
+    const offering = doctor.offerings.find((o) => o.offerId.equals(offeringId));
+    console.log({ offering });
 
     const isDateFitsRequirment = HelperService.checkIfDateFitsBookingRequirments(date, 2);
 
-    if(!isDateFitsRequirment){
+    if (!isDateFitsRequirment) {
       throw new InsufficientDataError('insufficient date', []);
     }
 
-    if(patient.balance < offering.price){ // TODO convert between curencies
+    if (patient.balance < offering.price) {
+      // TODO convert between curencies
       throw new InsufficientDataError('insufficient balance', []);
     }
 
     const avialableSlots = await this.getDoctorsTimeSlotsByDate(doctorId.toString(), date.toISOString().slice(0, 10));
-    console.log({avialableSlots, timeSlot});
+    console.log({ avialableSlots, timeSlot });
     const isSlotAvialable = HelperService.checkSlotAvialability(avialableSlots, timeSlot);
 
-    if(!isSlotAvialable){
+    if (!isSlotAvialable) {
       throw new InsufficientDataError('insufficient time slot', []);
     }
 
@@ -245,21 +249,143 @@ class PatientService extends UserService {
     await patient.save();
     // TODO add new record in transactions collection
 
+    const startDate = HelperService.generateStartDateTime(date, timeSlot.from);
+
     const meeting = new Meeting({
       patientId,
       doctorId,
-      date,
+      date: startDate,
       timeSlot,
       offeringId,
       price: offering.price,
       currency: doctor.currency,
-    })
+    });
 
     await meeting.save();
+
+    sendMail(
+      doctor.email,
+      'Meeting Booking',
+      `${patient.fullName} has booked a meeting
+       on ${meeting.date}`,
+    );
+
     return meeting;
   }
-  
-  
+
+  async cancelMeeting(userId: string, id: string, reason: string): Promise<IMeeting> {
+    const meetingId = new Types.ObjectId(id);
+    const meeting = await Meeting.findById(meetingId);
+    const patient = await Patient.findById(meeting.patientId);
+    const doctor = await Doctor.findById(meeting.doctorId);
+
+    const userObjectId = new Types.ObjectId(userId);
+    if(!userObjectId.equals(patient._id)){
+      throw new InsufficientDataError();
+    }
+
+    const timeDiff = HelperService.getDateDiffByHour(new Date(), meeting.date);
+    if (timeDiff < constants.ALLOWED_CANCELATION_TIME && meeting.status === meetingStatus.CONFIRMED) {
+      // TODO create transaction transaction, inject transaction service
+      patient.balance += meeting.price / 2;
+      doctor.balance += meeting.price / 2;
+    } else {
+      patient.balance += meeting.price;
+    }
+
+    meeting.status = meetingStatus.CANCELED;
+    await meeting.save();
+    await patient.save();
+    await doctor.save();
+
+    sendMail(
+      doctor.email,
+      'Meeting cancelation',
+      `${patient.fullName} has canceled meeting
+       on ${meeting.date} with message '${reason}'`,
+    );
+
+    return meeting;
+  }
+
+  async getMeetings(patientId: Types.ObjectId, status: string): Promise<Array<IMeeting>> {
+    patientId = new Types.ObjectId(patientId);
+
+    const pipeline = [
+      {
+        $match: {
+          patientId,
+          status,
+        },
+      },
+      {
+        $lookup: {
+          from: Doctor.collection.name,
+          localField: 'doctorId',
+          foreignField: '_id',
+          as: 'doctor',
+        },
+      },
+      {
+        $addFields: {
+          doctor: { $arrayElemAt: ['$doctor', 0] },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          patientId: 1,
+          date: 1,
+          timeSlot: 1,
+          price: 1,
+          status: 1,
+          doctor: {
+            email: '$doctor.email',
+            fullName: '$doctor.fullName',
+            avatar: '$doctor.avatar',
+            speciality: '$doctor.speciality',
+          },
+        },
+      },
+    ];
+
+    const meetings = await Meeting.aggregate(pipeline);
+    return meetings;
+  }
+
+  async finishAndRateMeeting(userId: string, meetingId: string, raiting: number, comment:string): Promise<IDoctorRaiting>{
+    const patientObjectId = new Types.ObjectId(userId);
+    const meetingObjectId = new Types.ObjectId(meetingId);
+
+    const meeting = await Meeting.findById(meetingObjectId);
+    const doctor = await Doctor.findById(meeting.doctorId);
+
+    if(!patientObjectId.equals(meeting.patientId)){
+      throw new InsufficientDataError();
+    }
+
+    const currentRaiting = doctor.raiting;
+    let raitedCount = doctor.raitedCount || 1;
+    
+    const newRaiting = (currentRaiting * raitedCount + raiting) / (raitedCount+1);
+    doctor.raitedCount++;
+    doctor.raiting = newRaiting;
+    await doctor.save();
+
+    meeting.status = meetingStatus.FINISHED;
+    await meeting.save();
+
+    const doctorRaiting = new DoctorRaiting({
+      doctorId: doctor._id,
+      patientId: patientObjectId,
+      raiting,
+      comment
+    })
+
+    await doctorRaiting.save()
+    return doctorRaiting;
+
+  }
 }
 
 export default new PatientService();

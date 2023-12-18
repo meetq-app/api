@@ -8,6 +8,7 @@ export interface IDoctor extends IUser {
     activeStatus: activeStatus,
     speciality: speciality,
     raiting: number,
+    raitedCount: number,
     languages: [userLanguage]; 
     info?: string,
     certificates?: Array<string>

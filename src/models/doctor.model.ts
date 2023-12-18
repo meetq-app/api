@@ -48,6 +48,10 @@ const doctorSchema = new Schema<IDoctor>({
     type: Number,
     default: 5,
   },
+  raitedCount: {
+    type: Number,
+    default: 1,
+  },
   certificates: {
     type: [String],
   },

@@ -1,7 +1,7 @@
 import { respStatus } from '../enum/response.enum';
 import fs from 'fs';
 import { join } from 'path';
-import { TimeSlot } from '../interfaces';
+import { Time, TimeSlot } from '../interfaces';
 
 export class HelperService {
   static generateRandomSixDigitNumber() {
@@ -80,5 +80,21 @@ export class HelperService {
     }
 
     return true;
+  }
+
+  static generateStartDateTime(givenDate: Date, givenTime: Time): Date {
+    const year: number = givenDate.getUTCFullYear();
+    const month: number = givenDate.getUTCMonth() + 1;
+    const day: number = givenDate.getUTCDate();
+
+    const [hours, minutes] = givenTime.split(':').map(Number);
+    const combinedDateTime: Date = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+    return combinedDateTime;
+  }
+
+  static getDateDiffByHour(date1: Date, date2: Date): number {
+    const timeDifferenceMs: number = date2.getTime() - date1.getTime();
+    const differenceInHours: number = Math.floor(timeDifferenceMs / (1000 * 60 * 60));
+    return differenceInHours; 
   }
 }

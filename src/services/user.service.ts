@@ -9,7 +9,7 @@ import { join } from 'path';
 import { IMeeting } from '../interfaces/meeting.interface';
 import Meeting from '../models/meeting.model';
 
-export abstract class UserService{
+export abstract class UserService {
   userModel: Model<Document>;
 
   userVerificationPrefix = 'USER_VERIFY';
@@ -42,11 +42,11 @@ export abstract class UserService{
     }
   }
 
-  async updateAvatar(id: Types.ObjectId, base64String: string): Promise<string>{
-    try{
+  async updateAvatar(id: Types.ObjectId, base64String: string): Promise<string> {
+    try {
       const filename = `avatar_${uuid()}.png`;
       const filePath = `/img/avatar/${filename}`;
-      await this.userModel.findByIdAndUpdate(id, {avatar: filePath});
+      await this.userModel.findByIdAndUpdate(id, { avatar: filePath });
       const avatar = await HelperService.saveBase64Image(base64String, filePath);
       return avatar;
     } catch (e) {
@@ -89,9 +89,4 @@ export abstract class UserService{
 
     return token;
   }
-
-  // async cancelMeeting(id: string, canceledBy: userRole): Promise<IMeeting>{
-  //   const meetingId = new Types.ObjectId(id);
-  //   const meeting = await Meeting.findById(meetingId);
-  // }
 }

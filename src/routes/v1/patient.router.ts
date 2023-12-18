@@ -18,8 +18,11 @@ router
   .patch('/me', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientInfo)
   .patch('/avatar', auth, checkUserRole(userRole.PATIENT), patientCtrl.updatePatientAvatar)
   .get('/doctors', patientCtrl.getDoctors)
-  .get('/doctor/slots/:id/:date', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctorsTimeSlots)
-  .get('/doctor/:id', patientCtrl.getDoctor)
-  .post('/doctor/book', auth, checkUserRole(userRole.PATIENT), patientCtrl.bookMeeting)
+  .get('/doctors/slots/:id/:date', auth, checkUserRole(userRole.PATIENT), patientCtrl.getDoctorsTimeSlots)
+  .get('/doctors/:id', patientCtrl.getDoctor)
+  .post('/doctors/book', auth, checkUserRole(userRole.PATIENT), patientCtrl.bookMeeting)
+  .patch('/meetings/cancel/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.cancelMeeting)
+  .patch('/meetings/finish/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.finishMeeting)
+  .get('/meetings/:status', auth, checkUserRole(userRole.PATIENT), patientCtrl.getlMeetings)
 
 export default router;
