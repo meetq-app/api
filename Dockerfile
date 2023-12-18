@@ -6,7 +6,7 @@ COPY docker.env ./.env
 RUN npm install --production
 COPY . .
 
-RUN chmod -R 775 src/public
+RUN chmod -R 775 /app/src/public
 
 EXPOSE 5050
 
