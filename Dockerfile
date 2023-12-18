@@ -6,6 +6,8 @@ COPY docker.env ./.env
 RUN npm install --production
 COPY . .
 
+RUN chmod -R 775 src/public/img/
+
 EXPOSE 5050
 
 CMD ["npm", "run", "dev"]
