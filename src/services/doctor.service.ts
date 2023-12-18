@@ -47,7 +47,8 @@ class DoctorService extends UserService {
       const saveNase64Certificates = base64Strings.map((b64) => {
         const filename = `certificate_${uuid()}.png`;
         const filePath = `/img/certificate/${filename}`;
-        certificates.push(filePath);
+        const absolutePath = `${process.env.ABSOLUTE_PATH}${filePath}`;
+        certificates.push(absolutePath);
         return HelperService.saveBase64Image(b64, filePath);
       });
 
@@ -56,8 +57,9 @@ class DoctorService extends UserService {
       user.certificates = [...user.certificates, ...certificates];
       await user.save();
 
-      const certificateUrls = await Promise.allSettled(saveNase64Certificates);
-      return certificateUrls.map((cert) => (cert.status === 'fulfilled' ? cert.value : ''));
+      await Promise.allSettled(saveNase64Certificates);
+      //@ts-ignore
+      return user.certificates;
     } catch (e) {
       throw new Error(e);
     }

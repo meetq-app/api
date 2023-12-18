@@ -4,7 +4,7 @@ import { HelperService } from './helper.service';
 
 class ErrorHandler {
   notFound(req: Request, res: Response, next: NextFunction) {
-    res.status(404).send(HelperService.formatResponse(respStatus.FAILED, { error: 'Not found' }));
+    res.status(404).send(HelperService.formatResponse(respStatus.FAILED, { error: 'Not found', type: 'NotFound' }));
   }
 
   internalServerError(err: any, req: Request, res: Response, next: NextFunction) {
@@ -23,7 +23,6 @@ class ErrorHandler {
         details: err.details,
       }),
     );
-
   }
 }
 

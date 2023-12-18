@@ -46,9 +46,10 @@ export abstract class UserService {
     try {
       const filename = `avatar_${uuid()}.png`;
       const filePath = `/img/avatar/${filename}`;
-      await this.userModel.findByIdAndUpdate(id, { avatar: filePath });
-      const avatar = await HelperService.saveBase64Image(base64String, filePath);
-      return avatar;
+      await HelperService.saveBase64Image(base64String, filePath);
+      const avatarAbsolutePath = `${process.env.ABSOLUTE_PATH}${filePath}`;
+      await this.userModel.findByIdAndUpdate(id, { avatar: avatarAbsolutePath });
+      return avatarAbsolutePath;
     } catch (e) {
       throw new Error(e);
     }

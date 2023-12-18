@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types } from 'mongoose';
 import { activeStatus, userCurrency } from '../enum/user.enum';
-import { IDoctor } from '../interfaces/doctor.interface';
+import { IDoctor } from '../interfaces/';
 
 const doctorSchema = new Schema<IDoctor>({
   fullName: {
