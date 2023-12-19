@@ -1,12 +1,18 @@
 import { Types } from 'mongoose';
 import { userRole } from '../enum/user.enum';
 import { NotFoundError } from '../errors/not-found.error';
-import { IDoctor } from '../interfaces/doctor.interface';
+import { IDoctor, IMeeting } from '../interfaces';
 import Doctor from '../models/doctor.model';
 import { UserService } from './user.service';
 import { v4 as uuid } from 'uuid';
 import { HelperService } from './helper.service';
 import { ISchedule } from '../interfaces/schedule.interface';
+import Meeting from '../models/meeting.model';
+import Patient from '../models/patient.model';
+import { InsufficientDataError } from '../errors';
+import constants from '../constants';
+import { meetingStatus } from '../enum/meeting.enum';
+import { sendMail } from './mail.service';
 
 class DoctorService extends UserService {
   userModel;
@@ -94,6 +100,97 @@ class DoctorService extends UserService {
     } catch (e) {
       throw new Error(e);
     }
+  }
+
+  async cancelMeeting(userId: string, id: string, reason: string): Promise<IMeeting> {
+    const meetingId = new Types.ObjectId(id);
+    const meeting = await Meeting.findById(meetingId);
+    const patient = await Patient.findById(meeting.patientId);
+    const doctor = await Doctor.findById(meeting.doctorId);
+
+    const userObjectId = new Types.ObjectId(userId);
+    if (!userObjectId.equals(doctor._id)) {
+      throw new InsufficientDataError();
+    }
+
+    patient.balance += meeting.price;
+
+    meeting.status = meetingStatus.CANCELED;
+    await meeting.save();
+    await patient.save();
+
+    sendMail(
+      patient.email,
+      'Meeting cancelation',
+      `${doctor.fullName} has canceled meeting
+       on ${meeting.date} with message '${reason}'`,
+    );
+
+    return meeting;
+  }
+
+  async confirmMeeting(userId: string, id: string): Promise<IMeeting> {
+    const meetingId = new Types.ObjectId(id);
+    const meeting = await Meeting.findById(meetingId);
+    const patient = await Patient.findById(meeting.patientId);
+    const doctor = await Doctor.findById(meeting.doctorId);
+
+    const userObjectId = new Types.ObjectId(userId);
+    if (!userObjectId.equals(doctor._id)) {
+      throw new InsufficientDataError();
+    }
+
+    meeting.status = meetingStatus.CONFIRMED;
+    await meeting.save();
+
+    sendMail(patient.email, 'Meeting confitmation', `${doctor.fullName} has confirmed teh meeting`);
+
+    return meeting;
+  }
+
+  async getMeetings(doctorId: Types.ObjectId, status: string): Promise<Array<IMeeting>> {
+    doctorId = new Types.ObjectId(doctorId);
+
+    const pipeline = [
+      {
+        $match: {
+          doctorId,
+          status,
+        },
+      },
+      {
+        $lookup: {
+          from: Patient.collection.name,
+          localField: 'patientId',
+          foreignField: '_id',
+          as: 'patient',
+        },
+      },
+      {
+        $addFields: {
+          patient: { $arrayElemAt: ['$patient', 0] },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          patientId: 1,
+          date: 1,
+          timeSlot: 1,
+          price: 1,
+          status: 1,
+          patient: {
+            email: '$patient.email',
+            fullName: '$patient.fullName',
+            avatar: '$patient.avatar',
+            speciality: '$patient.speciality',
+          },
+        },
+      },
+    ];
+
+    const meetings = await Meeting.aggregate(pipeline);
+    return meetings;
   }
 }
 

@@ -77,4 +77,44 @@ export class DoctorController {
     }
   }
 
+  async cancelMeeting(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.currentUser.id.toString();
+      const { id } = req.params;
+      const { reason } = req.body;
+      const meeting = await doctorService.cancelMeeting(userId, id, reason);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meeting }));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in cancelling a meet', err);
+      return next(err);
+    }
+  }
+
+  async confirmMeeting(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.currentUser.id.toString();
+      const { id } = req.params;
+      const doctorRaiting = await doctorService.confirmMeeting(userId, id);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctorRaiting }));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in finishing a meet', err);
+      return next(err);
+    }
+  }
+
+  async getlMeetings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.currentUser.id;
+      const { status } = req.params;
+      const meetings = await doctorService.getMeetings(userId, status);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
+    } catch (err) {
+      console.log(req.query);
+      console.error('error in getting meetings for patient', err);
+      return next(err);
+    }
+  }
+
 }

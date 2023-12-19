@@ -20,5 +20,8 @@ router
   .post('/certificates', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.addDoctorCertificates)
   .patch('/schedule', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.updateDoctorSchedule)
   .patch('/offerings', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.updateDoctorOfferings)
+  .patch('/meetings/cancel/:id', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.cancelMeeting)
+  .patch('/meetings/confirm/:id', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.confirmMeeting)
+  .get('/meetings/:status', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.getlMeetings)
 
 export default router;
