@@ -187,7 +187,7 @@ class PatientService extends UserService {
             avatar: { $first: '$avatar' },
             fullName: { $first: '$fullName' },
             raiting: { $first: '$raiting' },
-            raraitedCount: { $first: '$raraitedCount' },
+            raitedCount: { $first: '$raitedCount' },
             gender: { $first: '$gender' },
             country: { $first: '$country' },
             timezone: { $first: '$timezone' },
