@@ -6,6 +6,7 @@ import { userRole } from '../enum/user.enum';
 import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
+import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
 import Meeting from '../models/meeting.model';
@@ -67,7 +68,7 @@ class PatientService extends UserService {
         matchConditions['$or'] = [{ fullName: { $regex: userFilters.search, $options: 'i' } }, { speciality: { $regex: userFilters.search, $options: 'i' } }];
       }
 
-      const pipeline = [
+      const pipeline: any = [
         {
           $match: {
             activeStatus: 1,
@@ -92,8 +93,12 @@ class PatientService extends UserService {
       if (userFilters.sort) {
         const sortDirection = userFilters.sort === 'ASC' ? 1 : -1;
         const sortStage = { $sort: { [sortField]: sortDirection } };
-        //@ts-ignore
         pipeline.push(sortStage);
+      }
+
+      if (userFilters.limit) {
+        const limitStage = { $limit: +userFilters.limit };
+        pipeline.push(limitStage);
       }
 
       const doctors = Doctor.aggregate(pipeline);
@@ -278,7 +283,7 @@ class PatientService extends UserService {
     const doctor = await Doctor.findById(meeting.doctorId);
 
     const userObjectId = new Types.ObjectId(userId);
-    if(!userObjectId.equals(patient._id)){
+    if (!userObjectId.equals(patient._id)) {
       throw new InsufficientDataError();
     }
 
@@ -306,10 +311,10 @@ class PatientService extends UserService {
     return meeting;
   }
 
-  async getMeetings(patientId: Types.ObjectId, status: string): Promise<Array<IMeeting>> {
+  async getMeetings(patientId: Types.ObjectId, status: string, filters: IMeetingFilters): Promise<Array<IMeeting>> {
     patientId = new Types.ObjectId(patientId);
 
-    const pipeline = [
+    const pipeline: any = [
       {
         $match: {
           patientId,
@@ -347,25 +352,36 @@ class PatientService extends UserService {
       },
     ];
 
+    if (filters.sort) {
+      const sortDirection = filters.sort === 'ASC' ? 1 : -1;
+      const sortStage = { $sort: { date: sortDirection } };
+      pipeline.push(sortStage);
+    }
+
+    if (filters.limit) {
+      const limitStage = { $limit: +filters.limit };
+      pipeline.push(limitStage);
+    }
+
     const meetings = await Meeting.aggregate(pipeline);
     return meetings;
   }
 
-  async finishAndRateMeeting(userId: string, meetingId: string, raiting: number, comment:string): Promise<IDoctorRaiting>{
+  async finishAndRateMeeting(userId: string, meetingId: string, raiting: number, comment: string): Promise<IDoctorRaiting> {
     const patientObjectId = new Types.ObjectId(userId);
     const meetingObjectId = new Types.ObjectId(meetingId);
 
     const meeting = await Meeting.findById(meetingObjectId);
     const doctor = await Doctor.findById(meeting.doctorId);
 
-    if(!patientObjectId.equals(meeting.patientId)){
+    if (!patientObjectId.equals(meeting.patientId)) {
       throw new InsufficientDataError();
     }
 
     const currentRaiting = doctor.raiting;
     let raitedCount = doctor.raitedCount || 1;
-    
-    const newRaiting = (currentRaiting * raitedCount + raiting) / (raitedCount+1);
+
+    const newRaiting = (currentRaiting * raitedCount + raiting) / (raitedCount + 1);
     doctor.raitedCount++;
     doctor.raiting = newRaiting;
     await doctor.save();
@@ -377,12 +393,11 @@ class PatientService extends UserService {
       doctorId: doctor._id,
       patientId: patientObjectId,
       raiting,
-      comment
-    })
+      comment,
+    });
 
-    await doctorRaiting.save()
+    await doctorRaiting.save();
     return doctorRaiting;
-
   }
 }
 

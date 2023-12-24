@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { respStatus } from '../enum/response.enum';
 import { IUserFilters } from '../interfaces';
+import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 import { HelperService } from '../services/helper.service';
 import patientService from '../services/patient.service';
 
@@ -125,11 +126,12 @@ export class PatientController {
     }
   }
 
-  async getlMeetings(req: Request, res: Response, next: NextFunction) {
+  async getMeetings(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.currentUser.id;
       const { status } = req.params;
-      const meetings = await patientService.getMeetings(userId, status);
+      //@ts-ignore
+      const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
     } catch (err) {
       console.log(req.query);

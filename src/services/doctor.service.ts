@@ -13,6 +13,7 @@ import { InsufficientDataError } from '../errors';
 import constants from '../constants';
 import { meetingStatus } from '../enum/meeting.enum';
 import { sendMail } from './mail.service';
+import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 
 class DoctorService extends UserService {
   userModel;
@@ -148,10 +149,10 @@ class DoctorService extends UserService {
     return meeting;
   }
 
-  async getMeetings(doctorId: Types.ObjectId, status: string): Promise<Array<IMeeting>> {
+  async getMeetings(doctorId: Types.ObjectId, status: string, filters: IMeetingFilters): Promise<Array<IMeeting>> {
     doctorId = new Types.ObjectId(doctorId);
 
-    const pipeline = [
+    const pipeline: any = [
       {
         $match: {
           doctorId,
@@ -188,6 +189,11 @@ class DoctorService extends UserService {
         },
       },
     ];
+
+    if (filters.limit) {
+      const limitStage = { $limit: +filters.limit };
+      pipeline.push(limitStage);
+    }
 
     const meetings = await Meeting.aggregate(pipeline);
     return meetings;

@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { speciality, userLanguage } from "../enum/user.enum";
 
 export interface IUserFilters{
-    count: number,
+    limit: number,
     sort: 'ASC' | 'DESC',
     speciality: speciality
     sortField: 'raiting' | 'name',

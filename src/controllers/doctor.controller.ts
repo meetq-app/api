@@ -108,7 +108,8 @@ export class DoctorController {
     try {
       const userId = req.currentUser.id;
       const { status } = req.params;
-      const meetings = await doctorService.getMeetings(userId, status);
+      //@ts-ignore
+      const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
     } catch (err) {
       console.log(req.query);
