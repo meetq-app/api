@@ -132,6 +132,7 @@ class PatientService extends UserService {
             avatar: 1,
             fullName: 1,
             raiting: 1,
+            raitedCount: 1,
             gender: 1,
             country: 1,
             timezone: 1,
