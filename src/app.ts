@@ -6,6 +6,7 @@ import express from 'express';
 import path from 'path';
 import errorHandler from './services/error-hadlers.serivice';
 import v1 from './routes/v1';
+import payments from './routes/payments';
 import detectLanguage from './middleware/detect-language.middlware';
 
 class App {
@@ -30,6 +31,7 @@ class App {
 
   private mountRoutes(): void {
     this.express.use('/api/v1', v1);
+    this.express.use("/v1/payments", payments);
   }
 
   private catchErrors(): void {

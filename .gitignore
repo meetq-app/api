@@ -4,4 +4,5 @@
 /.env
 /docker.env
 
-/src/public/*
+/src/public/img/*
+
