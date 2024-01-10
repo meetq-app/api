@@ -7,6 +7,7 @@ import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
+import { IPatientService } from '../interfaces/patient-service.interface';
 import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
 import Meeting from '../models/meeting.model';
@@ -16,7 +17,7 @@ import { HelperService } from './helper.service';
 import { sendMail } from './mail.service';
 import { UserService } from './user.service';
 
-class PatientService extends UserService {
+class PatientService extends UserService implements IPatientService {
   userModel;
 
   constructor(userModel = Patient) {
@@ -29,7 +30,10 @@ class PatientService extends UserService {
     return jwt;
   }
 
-  async update(patientId: Types.ObjectId, updateData: Partial<Omit<IPatient, 'balance' | 'email'>>): Promise<Partial<IPatient>> {
+  async update(
+    patientId: Types.ObjectId,
+    updateData: Partial<Omit<IPatient, '_id' | 'balance' | 'email'>>,
+  ): Promise<Partial<IPatient>> {
     try {
       const patientIdToUpdate = await this.findUserById(patientId);
 
@@ -65,7 +69,10 @@ class PatientService extends UserService {
       }
 
       if (userFilters.search) {
-        matchConditions['$or'] = [{ fullName: { $regex: userFilters.search, $options: 'i' } }, { speciality: { $regex: userFilters.search, $options: 'i' } }];
+        matchConditions['$or'] = [
+          { fullName: { $regex: userFilters.search, $options: 'i' } },
+          { speciality: { $regex: userFilters.search, $options: 'i' } },
+        ];
       }
 
       const pipeline: any = [
@@ -218,7 +225,11 @@ class PatientService extends UserService {
     const date = new Date(slotsDate);
     const dayOfWeek = HelperService.getDayOfWeekFromDate(date);
 
-    const meetings = await Meeting.find({ doctorId, date, status: { $ne: meetingStatus.CANCELED } });
+    const meetings = await Meeting.find({
+      doctorId,
+      date,
+      status: { $ne: meetingStatus.CANCELED },
+    });
     const doctor = await Doctor.findById(doctorId);
     const schedule = doctor.schedule[dayOfWeek];
     if (schedule.length === 0) {
@@ -231,7 +242,13 @@ class PatientService extends UserService {
     return avialableTimeSlots;
   }
 
-  async bookMeeting(patientId: Types.ObjectId, doctorId: Types.ObjectId, date: Date, timeSlot: TimeSlot, offeringId: Types.ObjectId): Promise<IMeeting> {
+  async bookMeeting(
+    patientId: Types.ObjectId,
+    doctorId: Types.ObjectId,
+    date: Date,
+    timeSlot: TimeSlot,
+    offeringId: Types.ObjectId,
+  ): Promise<IMeeting> {
     const doctor = await Doctor.findById(doctorId);
     const patient = await Patient.findById(patientId);
 
@@ -251,7 +268,10 @@ class PatientService extends UserService {
       throw new InsufficientDataError('insufficient balance', []);
     }
 
-    const avialableSlots = await this.getDoctorsTimeSlotsByDate(doctorId.toString(), date.toISOString().slice(0, 10));
+    const avialableSlots = await this.getDoctorsTimeSlotsByDate(
+      doctorId.toString(),
+      date.toISOString().slice(0, 10),
+    );
     console.log({ avialableSlots, timeSlot });
     const isSlotAvialable = HelperService.checkSlotAvialability(avialableSlots, timeSlot);
 
@@ -300,7 +320,10 @@ class PatientService extends UserService {
     }
 
     const timeDiff = HelperService.getDateDiffByHour(new Date(), meeting.date);
-    if (timeDiff < constants.ALLOWED_CANCELATION_TIME && meeting.status === meetingStatus.CONFIRMED) {
+    if (
+      timeDiff < constants.ALLOWED_CANCELATION_TIME &&
+      meeting.status === meetingStatus.CONFIRMED
+    ) {
       // TODO create transaction transaction, inject transaction service
       patient.balance += meeting.price / 2;
       doctor.balance += meeting.price / 2;
@@ -323,7 +346,11 @@ class PatientService extends UserService {
     return meeting;
   }
 
-  async getMeetings(patientId: Types.ObjectId, status: string, filters: IMeetingFilters): Promise<Array<IMeeting>> {
+  async getMeetings(
+    patientId: Types.ObjectId,
+    status: string,
+    filters: IMeetingFilters,
+  ): Promise<Array<IMeeting>> {
     patientId = new Types.ObjectId(patientId);
 
     const pipeline: any = [
@@ -387,7 +414,12 @@ class PatientService extends UserService {
     return meetings;
   }
 
-  async finishAndRateMeeting(userId: string, meetingId: string, raiting: number, comment: string): Promise<IDoctorRaiting> {
+  async finishAndRateMeeting(
+    userId: string,
+    meetingId: string,
+    raiting: number,
+    comment: string,
+  ): Promise<IDoctorRaiting> {
     const patientObjectId = new Types.ObjectId(userId);
     const meetingObjectId = new Types.ObjectId(meetingId);
 

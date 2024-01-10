@@ -10,7 +10,6 @@ import { ISchedule } from '../interfaces/schedule.interface';
 import Meeting from '../models/meeting.model';
 import Patient from '../models/patient.model';
 import { InsufficientDataError } from '../errors';
-import constants from '../constants';
 import { meetingStatus } from '../enum/meeting.enum';
 import { sendMail } from './mail.service';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
@@ -28,7 +27,10 @@ class DoctorService extends UserService {
     return jwt;
   }
 
-  async update(doctorId: Types.ObjectId, updateData: Partial<Omit<IDoctor, 'balance' | 'email'>>): Promise<Partial<IDoctor>> {
+  async update(
+    doctorId: Types.ObjectId,
+    updateData: Partial<Omit<IDoctor, 'balance' | 'email'>>,
+  ): Promise<Partial<IDoctor>> {
     try {
       const doctorToUpdate = await this.findUserById(doctorId);
 
@@ -149,7 +151,11 @@ class DoctorService extends UserService {
     return meeting;
   }
 
-  async getMeetings(doctorId: Types.ObjectId, status: string, filters: IMeetingFilters): Promise<Array<IMeeting>> {
+  async getMeetings(
+    doctorId: Types.ObjectId,
+    status: string,
+    filters: IMeetingFilters,
+  ): Promise<Array<IMeeting>> {
     doctorId = new Types.ObjectId(doctorId);
 
     const pipeline: any = [

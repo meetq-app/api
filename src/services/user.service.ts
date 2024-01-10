@@ -5,11 +5,9 @@ import { redisClient } from '../db/redis';
 import { InvalidCreedentialsdError } from '../errors';
 import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
-import { join } from 'path';
-import { IMeeting } from '../interfaces/meeting.interface';
-import Meeting from '../models/meeting.model';
+import { IUserService } from '../interfaces/user-service.interface';
 
-export abstract class UserService {
+export abstract class UserService implements IUserService {
   userModel: Model<Document>;
 
   userVerificationPrefix = 'USER_VERIFY';
@@ -36,7 +34,10 @@ export abstract class UserService {
         if (err.code === 11000) {
           err.message = 'Email in use';
         }
-        const error = new InvalidCreedentialsdError('Invalid Creedentials', err.errors ?? err.message);
+        const error = new InvalidCreedentialsdError(
+          'Invalid Creedentials',
+          err.errors ?? err.message,
+        );
         throw error;
       }
     }

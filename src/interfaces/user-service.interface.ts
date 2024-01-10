@@ -1,12 +1,12 @@
-import { ObjectId } from "mongoose";
+import { Document, ObjectId, Types } from "mongoose";
 import { userRole } from "../enum/user.enum";
-// import { IUser } from "./patient.interface";
 
-// export interface IUserService {
-//     findUserById(id: ObjectId): Promise<IUser>
-//     findUserByEmail(email: string): Promise<IUser>
-//     createUser(email: string): Promise<IUser>
-//     generateVerificationCode(email: string): Promise<number>
-//     checkVerifivationCode(email: string, code: string): Promise<boolean>
-//     generateJWT(email: string, id: string, role: userRole): string
-// }
+export interface IUserService {
+    findUserById(id: Types.ObjectId): Promise<Document>
+    findUserByEmail(email: string): Promise<Document>
+    createUser(email: string): Promise<Document>
+    updateAvatar(id: Types.ObjectId, base64String: string): Promise<string>
+    generateVerificationCode(email: string): Promise<number>
+    checkVerifivationCode(email: string, code: string): Promise<boolean>
+    generateJWT(email: string, id: string, role: userRole): string
+}
