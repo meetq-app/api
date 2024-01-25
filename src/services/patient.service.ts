@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
-import { userRole } from '../enum/user.enum';
+import { userLanguage, userRole } from '../enum/user.enum';
 import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
@@ -350,6 +350,7 @@ class PatientService extends UserService implements IPatientService {
     patientId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
+    userLanguage: userLanguage
   ): Promise<Array<IMeeting>> {
     patientId = new Types.ObjectId(patientId);
 
@@ -369,8 +370,17 @@ class PatientService extends UserService implements IPatientService {
         },
       },
       {
+        $lookup: {
+          from: Offering.collection.name,
+          localField: 'offeringId',
+          foreignField: '_id',
+          as: 'offering',
+        },
+      },
+      {
         $addFields: {
           doctor: { $arrayElemAt: ['$doctor', 0] },
+          offering: { $arrayElemAt: ['$offering', 0] },
         },
       },
       {
@@ -381,6 +391,7 @@ class PatientService extends UserService implements IPatientService {
           timeSlot: 1,
           price: 1,
           status: 1,
+          offering: `$offering.name.${userLanguage}`,
           doctor: {
             _id: '$doctor._id',
             email: '$doctor.email',

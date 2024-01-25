@@ -129,9 +129,10 @@ export class PatientController {
   async getMeetings(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.currentUser.id;
+      const { lang } = req;
       const { status } = req.params;
       //@ts-ignore
-      const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters);
+      const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters, lang);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
     } catch (err) {
       console.log(req.query);

@@ -1,7 +1,7 @@
 import { Document, ObjectId, Types } from 'mongoose';
 import { IDoctor, IDoctorRaiting, IMeeting, IUserFilters, TimeSlot } from '.';
 import { appLanguage } from '../enum/app.enum';
-import { userRole } from '../enum/user.enum';
+import { userLanguage, userRole } from '../enum/user.enum';
 import { IMeetingFilters } from './meeting-filters.interface';
 import { IPatient } from './patient.interface';
 
@@ -26,6 +26,7 @@ export interface IPatientService {
     patientId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
+    lang: userLanguage,
   ): Promise<Array<IMeeting>>;
   finishAndRateMeeting(
     userId: string,

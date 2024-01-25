@@ -16,6 +16,24 @@ export enum userLanguage {
   RU = 'ru',
 }
 
+export const userLanguageData = [
+  {
+    id: "am",
+    title: "Armenian",
+    nativeTitle: "Հայերեն"
+  },
+  {
+    id: "ru",
+    title: "Russian",
+    nativeTitle: "Русский"
+  },
+  {
+    id: "en",
+    title: "English",
+    nativeTitle: "English"
+  }
+]
+
 export enum userCurrency {
   AMD = 'AMD',
   RUB = 'RUB',

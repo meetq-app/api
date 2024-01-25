@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { appLanguage } from '../enum/app.enum';
+import { appLanguageData } from '../enum/app.enum';
 import { respStatus } from '../enum/response.enum';
-import { userCountry, userCurrency, userGender, userLanguage } from '../enum/user.enum';
+import { userCountry, userCurrency, userGender, userLanguageData } from '../enum/user.enum';
 import Offering from '../models/offering.model';
 import { HelperService } from '../services/helper.service';
-import patientService from '../services/patient.service';
 
 export class GeneralController {
   async getOfferings(req: Request, res: Response, next: NextFunction) {
@@ -29,16 +28,14 @@ export class GeneralController {
 
   async getUserEnums(req: Request, res: Response, next: NextFunction) {
     try {
-      res
-        .status(200)
-        .send(
-          HelperService.formatResponse(respStatus.SUCCESS, {
-            userCurrency,
-            userLanguage,
-            userGender,
-            userCountry,
-          }),
-        );
+      res.status(200).send(
+        HelperService.formatResponse(respStatus.SUCCESS, {
+          userCurrency,
+          userLanguage: userLanguageData,
+          userGender,
+          userCountry,
+        }),
+      );
     } catch (err) {
       return next(err);
     }
@@ -46,7 +43,9 @@ export class GeneralController {
 
   async getAppEnums(req: Request, res: Response, next: NextFunction) {
     try {
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { appLanguage }));
+      res
+        .status(200)
+        .send(HelperService.formatResponse(respStatus.SUCCESS, { appLanguage: appLanguageData }));
     } catch (err) {
       return next(err);
     }

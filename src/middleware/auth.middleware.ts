@@ -32,7 +32,6 @@ const auth = (req: Request, res: Response, next: NextFunction) => {
       return next(error);
     }
     const payload = jwt.verify(splitedToken[1], process.env.JWT_SECRET) as UserPayload;
-    console.log('payload', splitedToken);
     req.currentUser = payload;
     return next();
   } catch (err) {
