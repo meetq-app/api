@@ -1,9 +1,11 @@
+import { Types } from 'mongoose';
 import { appLanguage } from '../../enum/app.enum';
 import Offering from '../../models/offering.model';
 
 export default async function offeringSeed() {
   const offerings = [
     {
+      _id: new Types.ObjectId('65b549d17e3d8e5a4fbde89a'),
       name: {
         [appLanguage.EN]: 'Psychological Counseling',
         [appLanguage.RU]: 'Психологическое консультирование',
@@ -16,6 +18,7 @@ export default async function offeringSeed() {
       },
     },
     {
+      _id: new Types.ObjectId('65b61d169b702b84dbebc6a1'),
       name: {
         [appLanguage.EN]: 'Family Therapy',
         [appLanguage.RU]: 'Семейная терапия',
@@ -28,6 +31,7 @@ export default async function offeringSeed() {
       },
     },
     {
+      _id: new Types.ObjectId('65b61d169b702b84dbebc6a2'),
       name: {
         [appLanguage.EN]: 'Children Therapy',
         [appLanguage.RU]: 'Терапия для детей',

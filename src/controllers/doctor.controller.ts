@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { respStatus } from '../enum/response.enum';
+import { userRole } from '../enum/user.enum';
 import doctorService from '../services/doctor.service';
 import { HelperService } from '../services/helper.service';
+import transactionService from '../services/transaction.service';
 
 const Doctor = require('../models/doctor.model');
 
@@ -85,7 +87,6 @@ export class DoctorController {
       const meeting = await doctorService.cancelMeeting(userId, id, reason);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meeting }));
     } catch (err) {
-      console.log(req.query);
       console.error('error in cancelling a meet', err);
       return next(err);
     }
@@ -98,7 +99,6 @@ export class DoctorController {
       const doctorRaiting = await doctorService.confirmMeeting(userId, id);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctorRaiting }));
     } catch (err) {
-      console.log(req.query);
       console.error('error in finishing a meet', err);
       return next(err);
     }
@@ -112,8 +112,19 @@ export class DoctorController {
       const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
     } catch (err) {
-      console.log(req.query);
       console.error('error in getting meetings for patient', err);
+      return next(err);
+    }
+  }
+
+  async getTransactions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.currentUser.id;
+      console.log({userId});
+      const transactions = await transactionService.getUserTransactions(userId, userRole.DOCTOR);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { transactions }));
+    } catch (err) {
+      console.error('error in getting transactions for patient', err);
       return next(err);
     }
   }

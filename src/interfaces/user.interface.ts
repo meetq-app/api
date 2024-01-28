@@ -10,5 +10,5 @@ export interface IUser{
   country?: userCountry;
   timezone?: string;
   balance: number;
-  currency: userCurrency;
+  currency: Types.ObjectId;
 }

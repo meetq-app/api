@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
+import { transactionType } from '../enum/transaction.enum';
 import { userLanguage, userRole } from '../enum/user.enum';
 import { InsufficientDataError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
@@ -15,6 +16,7 @@ import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
 import { HelperService } from './helper.service';
 import { sendMail } from './mail.service';
+import transactionService from './transaction.service';
 import { UserService } from './user.service';
 
 class PatientService extends UserService implements IPatientService {
@@ -280,8 +282,31 @@ class PatientService extends UserService implements IPatientService {
     }
 
     // TODO create transaction reduce patient balace
+    // use mongoose transaction
+    // TODO Use this methods for meeting cancelation
+    transactionService.CreateTransaction(
+      null,
+      patientId,
+      doctor.fullName,
+      offering.price,
+      transactionType.OUTCOME,
+      patient.currency,
+    );
+
+    transactionService.CreateTransaction(
+      doctorId,
+      null,
+      patient.fullName,
+      offering.price,
+      transactionType.INCOME,
+      doctor.currency,
+    );
+
     patient.balance -= offering.price;
     await patient.save();
+
+    doctor.balance += offering.price;
+    await doctor.save();
     // TODO add new record in transactions collection
 
     const startDate = HelperService.generateStartDateTime(date, timeSlot.from);
@@ -350,7 +375,7 @@ class PatientService extends UserService implements IPatientService {
     patientId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
-    userLanguage: userLanguage
+    userLanguage: userLanguage,
   ): Promise<Array<IMeeting>> {
     patientId = new Types.ObjectId(patientId);
 
@@ -391,7 +416,11 @@ class PatientService extends UserService implements IPatientService {
           timeSlot: 1,
           price: 1,
           status: 1,
-          offering: `$offering.name.${userLanguage}`,
+          offering: { 
+            _id: '$offering._id',
+            name: `$offering.name.${userLanguage}`,
+            description: `$offering.description.${userLanguage}`,
+          },
           doctor: {
             _id: '$doctor._id',
             email: '$doctor.email',

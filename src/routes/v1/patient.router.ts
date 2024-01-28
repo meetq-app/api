@@ -158,6 +158,7 @@ router
   .post('/doctors/book', auth, checkUserRole(userRole.PATIENT), patientCtrl.bookMeeting)
   .patch('/meetings/cancel/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.cancelMeeting)
   .patch('/meetings/finish/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.finishMeeting)
-  .get('/meetings/:status', auth, checkUserRole(userRole.PATIENT), patientCtrl.getMeetings);
+  .get('/meetings/:status', auth, checkUserRole(userRole.PATIENT), patientCtrl.getMeetings)
+  .get('/transactions', auth, checkUserRole(userRole.PATIENT), patientCtrl.getTransactions)
 
 export default router;

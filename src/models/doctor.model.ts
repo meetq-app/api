@@ -34,10 +34,7 @@ const doctorSchema = new Schema<IDoctor>({
     type: Number,
     default: activeStatus.ACTIVE,
   },
-  currency: {
-    type: String,
-    default: userCurrency.AMD,
-  },
+  currency: Schema.Types.ObjectId,
   country: {
     type: String,
   },
@@ -75,6 +72,8 @@ const doctorSchema = new Schema<IDoctor>({
     friday: [{ from: String, to: String }],
     saturday: [{ from: String, to: String }],
   },
+}, {
+  timestamps: true 
 });
 
 const Doctor = mongoose.model('Doctor', doctorSchema);

@@ -68,6 +68,7 @@ router
   .patch('/offerings', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.updateDoctorOfferings)
   .patch('/meetings/cancel/:id', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.cancelMeeting)
   .patch('/meetings/confirm/:id', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.confirmMeeting)
-  .get('/meetings/:status', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.getlMeetings);
+  .get('/meetings/:status', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.getlMeetings)
+  .get('/transactions', auth, checkUserRole(userRole.DOCTOR), doctorCtrl.getTransactions)
 
 export default router;

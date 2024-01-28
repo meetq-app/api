@@ -26,10 +26,9 @@ const patientSchema = new Schema<IPatient>({
     type: Number,
     default: 0,
   },
-  currency: {
-    type: String,
-    default: userCurrency.AMD,
-  },
+  currency: Schema.Types.ObjectId,
+}, {
+  timestamps: true 
 });
 
 const Patient = mongoose.model('Patient', patientSchema);
