@@ -281,34 +281,8 @@ class PatientService extends UserService implements IPatientService {
     if (!isSlotAvialable) {
       throw new InsufficientDataError('insufficient time slot', []);
     }
-
-    // TODO create transaction reduce patient balace
-    // use mongoose transaction
-    // TODO Use this methods for meeting cancelation
-    transactionService.CreateTransaction(
-      null,
-      patientId,
-      doctor.fullName,
-      offering.price,
-      transactionType.OUTCOME,
-      patient.currency,
-    );
-
-    transactionService.CreateTransaction(
-      doctorId,
-      null,
-      patient.fullName,
-      offering.price,
-      transactionType.INCOME,
-      doctor.currency,
-    );
-
-    patient.balance -= offering.price;
-    await patient.save();
-
-    doctor.balance += offering.price;
-    await doctor.save();
-    // TODO add new record in transactions collection
+  
+    await transactionService.patientToDoctorTransaction(patient, doctor, offering.price)
 
     const startDate = HelperService.generateStartDateTime(date, timeSlot.from);
 
