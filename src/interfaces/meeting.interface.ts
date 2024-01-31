@@ -11,6 +11,6 @@ export interface IMeeting {
     status: meetingStatus,
     offeringId: Types.ObjectId,
     price: number,
-    currency: userCurrency,
+    currency: Types.ObjectId,
     canceledBy? : userRole,
 }

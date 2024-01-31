@@ -6,6 +6,7 @@ import { InvalidCreedentialsdError } from '../errors';
 import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
 import { IUserService } from '../interfaces/user-service.interface';
+import Currency from '../models/currency.model';
 
 export abstract class UserService implements IUserService {
   userModel: Model<Document>;
@@ -14,8 +15,38 @@ export abstract class UserService implements IUserService {
   userVerificationTTL = 900; // 15 minutes
 
   async findUserById(id: Types.ObjectId): Promise<Document> {
-    const user = await this.userModel.findById(id);
-    return user;
+    // const user = await this.userModel.findById(id);
+    id = new Types.ObjectId(id);
+    const users = await this.userModel.aggregate([
+      {
+        $match: { _id: id },
+      },
+      {
+        $lookup: {
+          from: Currency.collection.name,
+          localField: 'currency',
+          foreignField: '_id',
+          as: 'currency',
+        },
+      },
+      {
+        $unwind: '$currency',
+      },
+      {
+        $project: {
+          _id: 1,
+          email: 1,
+          balance: { $toString: '$balance' },
+          fullName: 1,
+          gender: 1,
+          avatar: 1,
+          currency: '$currency',
+        },
+      },
+      { $limit: 1 },
+    ]);
+
+    return users[0];
   }
 
   async findUserByEmail(email: string): Promise<Document> {

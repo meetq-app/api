@@ -58,12 +58,12 @@ router
         }
         return true;
       }),
-      body('currency').optional().custom((value) => {
-        if (!Object.values(userCurrency).includes(value)) {
-          throw new Error('Invalid currency value');
-        }
-        return true;
-      }),
+      // body('currency').optional().custom((value) => {
+      //   if (!Object.values(userCurrency).includes(value)) {
+      //     throw new Error('Invalid currency value');
+      //   }
+      //   return true;
+      // }),
     ],
     validateRequest,
     checkUserRole(userRole.PATIENT),

@@ -10,7 +10,7 @@ const meetingSchema = new Schema<IMeeting>({
   status: { type: String, default: meetingStatus.BOOKED },
   offeringId: Schema.Types.ObjectId,
   price: Number,
-  currency: String,
+  currency: Schema.Types.ObjectId,
   canceledBy: String,
 });
 

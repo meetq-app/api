@@ -3,6 +3,7 @@ import { appLanguageData } from '../enum/app.enum';
 import { respStatus } from '../enum/response.enum';
 import { userCountry, userCurrency, userGender, userLanguageData } from '../enum/user.enum';
 import Offering from '../models/offering.model';
+import currencyService from '../services/currency.service';
 import { HelperService } from '../services/helper.service';
 
 export class GeneralController {
@@ -28,9 +29,10 @@ export class GeneralController {
 
   async getUserEnums(req: Request, res: Response, next: NextFunction) {
     try {
+      const currencies = await currencyService.getCurrencyList();
       res.status(200).send(
         HelperService.formatResponse(respStatus.SUCCESS, {
-          userCurrency,
+          userCurrency: currencies,
           userLanguage: userLanguageData,
           userGender,
           userCountry,

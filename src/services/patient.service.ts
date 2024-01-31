@@ -9,6 +9,7 @@ import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 import { IPatientService } from '../interfaces/patient-service.interface';
+import Currency from '../models/currency.model';
 import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
 import Meeting from '../models/meeting.model';
@@ -403,10 +404,21 @@ class PatientService extends UserService implements IPatientService {
         },
       },
       {
+        $lookup: {
+          from: Currency.collection.name,
+          localField: 'currency',
+          foreignField: '_id',
+          as: 'currency',
+        },
+      },
+      {
         $addFields: {
           doctor: { $arrayElemAt: ['$doctor', 0] },
           offering: { $arrayElemAt: ['$offering', 0] },
         },
+      },
+      {
+        $unwind: '$currency',
       },
       {
         $project: {
@@ -414,8 +426,9 @@ class PatientService extends UserService implements IPatientService {
           patientId: 1,
           date: 1,
           timeSlot: 1,
-          price: 1,
+          price:  { $toString: '$price' },
           status: 1,
+          currency: '$currency',
           offering: { 
             _id: '$offering._id',
             name: `$offering.name.${userLanguage}`,
@@ -432,7 +445,6 @@ class PatientService extends UserService implements IPatientService {
             gender: '$doctor.gender',
             country: '$doctor.country',
             timezone: '$doctor.timezone',
-            currency: '$doctor.currency',
             languages: '$doctor.languages',
           },
         },
