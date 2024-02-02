@@ -58,6 +58,7 @@ class PatientService extends UserService implements IPatientService {
   async getDoctors(userFilters: IUserFilters): Promise<Partial<IDoctor[]>> {
     try {
       const matchConditions = {};
+      console.log('userFilters', userFilters);
 
       if (userFilters.speciality) {
         matchConditions['speciality'] = userFilters.speciality;

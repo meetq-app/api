@@ -28,6 +28,11 @@ class TransactionService {
         $unwind: '$currency',
       },
       {
+        $sort: {
+          createdAt : -1
+        }
+      },
+      {
         $project: {
           _id: 1,
           patientId: 1,
@@ -36,6 +41,7 @@ class TransactionService {
           ammount: { $toString: '$ammount' },
           status: 1,
           type: 1,
+          date: '$createdAt',
           currency: '$currency',
         },
       },

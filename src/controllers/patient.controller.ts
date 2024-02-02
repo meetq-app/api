@@ -45,10 +45,6 @@ export class PatientController {
   async getDoctors(req: Request, res: Response, next: NextFunction) {
     try {
       //@ts-ignore
-      if (req.query.languages) req.query.languages = JSON.parse(req.query.languages);
-      // @ts-ignore
-      if (req.query.offerings) req.query.offerings = JSON.parse(req.query.offerings);
-      //@ts-ignore
       const doctors = await patientService.getDoctors(req.query as IUserFilters); //TODO temp solution untill impliment validatitions
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctors }));
     } catch (err) {

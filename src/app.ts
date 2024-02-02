@@ -24,7 +24,7 @@ class App {
     this.express.use(bodyParser.json());
     this.express.use(bodyParser.urlencoded({ extended: false }));
     this.express.use(helmet());
-    this.express.use(hpp());
+    // this.express.use(hpp());
     this.express.use(express.static(path.join(__dirname, 'public')));
     this.express.use(detectLanguage);
   }

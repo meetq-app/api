@@ -80,7 +80,7 @@ router
       'languages',
       'offerings',
       'search',
-    ]),
+    ], ['languages', 'offerings']),
     [
       query('limit').optional().isInt().withMessage('Limit must be an integer'),
 
@@ -111,9 +111,7 @@ router
         .withMessage('offerings parameter can not be empty')
         .custom((value) => {
           try {
-            const parsedOfferings = JSON.parse(value);
-
-            if (!Array.isArray(parsedOfferings)) {
+            if (!Array.isArray(value)) {
               throw new Error('offerings must be an array');
             }
 
@@ -129,13 +127,12 @@ router
         .withMessage('Languages parameter can not be empty')
         .custom((value) => {
           try {
-            const parsedLanguages = JSON.parse(value);
 
-            if (!Array.isArray(parsedLanguages)) {
+            if (!Array.isArray(value)) {
               throw new Error('Languages must be an array');
             }
 
-            if (parsedLanguages.some((lang) => !Object.values(userLanguage).includes(lang))) {
+            if (value.some((lang) => !Object.values(userLanguage).includes(lang))) {
               throw new Error('Invalid language detected');
             }
 
