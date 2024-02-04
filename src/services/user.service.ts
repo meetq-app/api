@@ -30,7 +30,7 @@ export abstract class UserService implements IUserService {
         },
       },
       {
-        $unwind: '$currency',
+        $unwind: { path: '$currency', preserveNullAndEmptyArrays: true },
       },
       {
         $project: {
@@ -40,7 +40,7 @@ export abstract class UserService implements IUserService {
           fullName: 1,
           gender: 1,
           avatar: 1,
-          currency: '$currency',
+          currency: { $ifNull: ['$currency', null] },
         },
       },
       { $limit: 1 },
