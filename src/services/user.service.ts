@@ -132,9 +132,9 @@ export abstract class UserService implements IUserService {
   async updateAvatar(id: Types.ObjectId, base64String: string): Promise<string> {
     try {
       const filename = `avatar_${uuid()}.png`;
-      const filePath = `/img/avatar/${filename}`;
+      const filePath = `avatar/${filename}`;
       await HelperService.saveBase64Image(base64String, filePath);
-      const avatarAbsolutePath = `${process.env.ABSOLUTE_PATH}${filePath}`;
+      const avatarAbsolutePath = `${process.env.SPACE_CDN_ENDPOINT}/${filePath}`;
       await this.userModel.findByIdAndUpdate(id, { avatar: avatarAbsolutePath });
       return avatarAbsolutePath;
     } catch (e) {

@@ -53,20 +53,19 @@ class DoctorService extends UserService {
   async addCertificate(id: Types.ObjectId, base64Strings: Array<string>): Promise<string[]> {
     try {
       const certificates = [];
-      const saveNase64Certificates = base64Strings.map((b64) => {
+      const saveBase64Certificates = base64Strings.map((b64) => {
         const filename = `certificate_${uuid()}.png`;
-        const filePath = `/img/certificate/${filename}`;
-        const absolutePath = `${process.env.ABSOLUTE_PATH}${filePath}`;
+        const filePath = `certificate/${filename}`;
+        const absolutePath = `${process.env.SPACE_CDN_ENDPOINT}/${filePath}`;
         certificates.push(absolutePath);
         return HelperService.saveBase64Image(b64, filePath);
       });
 
-      const user = await this.findUserById(id);
-      //@ts-ignore
+      const user = await Doctor.findById(id);
       user.certificates = [...user.certificates, ...certificates];
       await user.save();
 
-      await Promise.allSettled(saveNase64Certificates);
+      await Promise.allSettled(saveBase64Certificates);
       //@ts-ignore
       return user.certificates;
     } catch (e) {

@@ -3,6 +3,8 @@ import fs from 'fs';
 import { join } from 'path';
 import { Time, TimeSlot } from '../interfaces';
 
+const AWS = require('aws-sdk');
+
 export class HelperService {
   static generateRandomSixDigitNumber() {
     return Math.floor(100000 + Math.random() * 900000);
@@ -16,19 +18,31 @@ export class HelperService {
   }
 
   static async saveBase64Image(base64String: string, filePath: string): Promise<string> {
-    console.log('filePath', filePath);
-    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
-    const imageBuffer = Buffer.from(base64Data, 'base64');
-    const path = join(__dirname, '../', 'public', filePath);
 
-    console.log('path', path);
+    const spacesEndpoint = new AWS.Endpoint(process.env.SPACE_ENDPOINT); 
+    const s3 = new AWS.S3({
+      endpoint: spacesEndpoint,
+      accessKeyId: process.env.SPACE_ACCESS_KEY_ID,
+      secretAccessKey: process.env.SPACE_SECRET_ACCESS_KEY,
+    });
+    const bucketName = process.env.SPACE_BUCKET_NAME;
+
+    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+    const imageData = Buffer.from(base64Data, 'base64');
+
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: filePath, 
+      Body: imageData,
+      ACL: 'public-read', 
+    };
 
     return new Promise((resolve, rejects) => {
-      fs.writeFile(path, imageBuffer, 'base64', (err) => {
+      s3.upload(uploadParams, (err, data) => {
         if (err) {
           rejects(err);
         } else {
-          resolve(filePath);
+          resolve(data.Location);
         }
       });
     });
@@ -37,7 +51,15 @@ export class HelperService {
   static getDayOfWeekFromDate(date: Date): string {
     const dayOfWeek = date.getDay();
 
-    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const daysOfWeek = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ];
     return daysOfWeek[dayOfWeek];
   }
 
@@ -95,6 +117,6 @@ export class HelperService {
   static getDateDiffByHour(date1: Date, date2: Date): number {
     const timeDifferenceMs: number = date2.getTime() - date1.getTime();
     const differenceInHours: number = Math.floor(timeDifferenceMs / (1000 * 60 * 60));
-    return differenceInHours; 
+    return differenceInHours;
   }
 }
