@@ -130,7 +130,7 @@ class PatientService extends UserService implements IPatientService {
           timezone: { $first: '$timezone' },
           currency: { $first: '$currency' },
           speciality: { $first: '$speciality' },
-          languages: { $push: '$languages' }, // Aggregate languages into an array
+          languages: { $push: '$languages' }, 
         },
       });
 
@@ -173,6 +173,17 @@ class PatientService extends UserService implements IPatientService {
           },
         },
         {
+          $lookup: {
+            from: Language.collection.name,
+            localField: 'languages',
+            foreignField: '_id',
+            as: 'languages',
+          },
+        },
+        {
+          $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
+        },
+        {
           $project: {
             _id: 1,
             avatar: 1,
@@ -185,7 +196,7 @@ class PatientService extends UserService implements IPatientService {
             currency: 1,
             speciality: 1,
             certificates: 1,
-            languages: 1,
+            languages: { $ifNull: ['$languages', null] },
             info: 1,
             offerings: {
               $map: {
@@ -239,7 +250,7 @@ class PatientService extends UserService implements IPatientService {
             timezone: { $first: '$timezone' },
             currency: { $first: '$currency' },
             speciality: { $first: '$speciality' },
-            languages: { $first: '$languages' },
+            languages: { $push: '$languages' },
             info: { $first: '$info' },
             offerings: { $first: '$offerings' },
           },
