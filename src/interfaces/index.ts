@@ -8,4 +8,5 @@ export { IDoctor } from './doctor.interface';
 export { IMeeting } from './meeting.interface';
 export { ICurrency } from './currency.interface';
 export { Ilanguage } from './language.interface';
+export { ICountry } from './country.interface';
 

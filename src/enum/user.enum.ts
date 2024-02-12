@@ -46,9 +46,11 @@ export enum userCurrency {
 export enum userCountry {
   ARMENIA = 'Armenia',
   RUSSIA = 'Russia',
-  US = 'US',
-  UK = 'UK',
-  UAE = 'UAE',
+  US = 'United States',
+  UK = 'United Kingdom',
+  UAE = 'United Arab Emirates',
+  DE = 'Germany',
+  PL = 'Poland',
 }
 
 export enum activeStatus {

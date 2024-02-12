@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { appLanguageData } from '../enum/app.enum';
 import { respStatus } from '../enum/response.enum';
-import { userCountry, userCurrency, userGender, userLanguageData } from '../enum/user.enum';
+import { userCountry, userGender } from '../enum/user.enum';
 import Offering from '../models/offering.model';
+import countryService from '../services/country.service';
 import currencyService from '../services/currency.service';
 import { HelperService } from '../services/helper.service';
 import languageService from '../services/language.service';
@@ -32,12 +33,13 @@ export class GeneralController {
     try {
       const currencies = await currencyService.getCurrencyList();
       const languages = await languageService.getLanguages();
+      const countries = await countryService.getCountries()
       res.status(200).send(
         HelperService.formatResponse(respStatus.SUCCESS, {
           userCurrency: currencies,
           userLanguage: languages,
           userGender,
-          userCountry,
+          userCountry: countries
         }),
       );
     } catch (err) {
