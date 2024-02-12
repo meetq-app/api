@@ -30,6 +30,7 @@ router
       'fullName',
       'gender',
       'country',
+      'languages',
       'timezone',
       'currency',
       'speciality',

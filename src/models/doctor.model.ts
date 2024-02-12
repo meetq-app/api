@@ -53,7 +53,7 @@ const doctorSchema = new Schema<IDoctor>({
     type: [String],
   },
   languages: {
-    type: [String],
+    type: [Schema.Types.ObjectId],
   },
   offerings: {
     type: [

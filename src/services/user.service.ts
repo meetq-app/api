@@ -7,6 +7,7 @@ import { HelperService } from './helper.service';
 import { userRole } from '../enum/user.enum';
 import { IUserService } from '../interfaces/user-service.interface';
 import Currency from '../models/currency.model';
+import Language from '../models/language.model';
 
 export abstract class UserService implements IUserService {
   userModel: Model<Document>;
@@ -14,10 +15,10 @@ export abstract class UserService implements IUserService {
   userVerificationPrefix = 'USER_VERIFY';
   userVerificationTTL = 900; // 15 minutes
 
-  async findUserById(id: Types.ObjectId): Promise<Document> {
-    // const user = await this.userModel.findById(id);
+  async findUserById(id: Types.ObjectId, role: userRole = userRole.PATIENT): Promise<Document> {
+    
     id = new Types.ObjectId(id);
-    const users = await this.userModel.aggregate([
+    const pipeline: any[] = [
       {
         $match: { _id: id },
       },
@@ -30,6 +31,17 @@ export abstract class UserService implements IUserService {
         },
       },
       {
+        $lookup: {
+          from: Language.collection.name,
+          localField: 'languages',
+          foreignField: '_id',
+          as: 'languages',
+        },
+      },
+      {
+        $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
+      },
+      {
         $unwind: { path: '$currency', preserveNullAndEmptyArrays: true },
       },
       {
@@ -38,14 +50,57 @@ export abstract class UserService implements IUserService {
           email: 1,
           balance: { $toString: '$balance' },
           fullName: 1,
+          rating: 1,
+          ratedCount: 1,
           gender: 1,
           avatar: 1,
+          speciality: 1,
           currency: { $ifNull: ['$currency', null] },
+          info: 1,
+          certificates: 1,
+          languages: { $ifNull: ['$languages', null] },
         },
       },
       { $limit: 1 },
-    ]);
+    ]
 
+    if (role === userRole.PATIENT){
+      pipeline.push({
+        $group: {
+          _id: '$_id',
+          avatar: { $first: '$avatar' },
+          email: { $first: '$email' },
+          balance: { $first: { $toString: '$balance' } },
+          fullName: { $first: '$fullName' },
+          gender: { $first: '$gender' },
+          country: { $first: '$country' },
+          timezone: { $first: '$timezone' },
+          currency: { $first: '$currency' },
+        },
+      }); 
+    } else{
+      pipeline.push({
+        $group: {
+          _id: '$_id',
+          avatar: { $first: '$avatar' },
+          email: { $first: '$email' },
+          balance: { $first: { $toString: '$balance' } },
+          fullName: { $first: '$fullName' },
+          rating: { $first: '$rating' },
+          ratedCount: { $first: '$ratedCount' },
+          gender: { $first: '$gender' },
+          country: { $first: '$country' },
+          timezone: { $first: '$timezone' },
+          info: { $first: '$info' },
+          currency: { $first: '$currency' },
+          certificates: { $first: '$certificates' },
+          speciality: { $first: '$speciality' },
+          languages: { $push: '$languages' }, 
+        },
+      });
+    }
+
+    const users = await this.userModel.aggregate(pipeline);
     return users[0];
   }
 

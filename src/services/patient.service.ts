@@ -12,6 +12,7 @@ import { IPatientService } from '../interfaces/patient-service.interface';
 import Currency from '../models/currency.model';
 import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
+import Language from '../models/language.model';
 import Meeting from '../models/meeting.model';
 import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
@@ -38,16 +39,16 @@ class PatientService extends UserService implements IPatientService {
     updateData: Partial<Omit<IPatient, '_id' | 'balance' | 'email'>>,
   ): Promise<Partial<IPatient>> {
     try {
-      const patientIdToUpdate = await this.findUserById(patientId);
+      const patientToUpdate = await Patient.findById(patientId);
 
       if (!patientId) {
         throw new NotFoundError();
       }
 
       const { ...allowedUpdates } = updateData;
-      Object.assign(patientIdToUpdate, allowedUpdates);
+      Object.assign(patientToUpdate, allowedUpdates);
 
-      const updatedPatient = await patientIdToUpdate.save();
+      const updatedPatient = await patientToUpdate.save();
       return updatedPatient;
     } catch (error) {
       console.error(error);
@@ -65,7 +66,8 @@ class PatientService extends UserService implements IPatientService {
       }
 
       if (userFilters.languages && userFilters.languages.length > 0) {
-        matchConditions['languages'] = { $in: userFilters.languages };
+        const languages = userFilters.languages.map(l=>(new Types.ObjectId(l)));
+        matchConditions['languages'] = { $in: languages };
       }
 
       if (userFilters.offerings && userFilters.offerings.length > 0) {
@@ -89,6 +91,17 @@ class PatientService extends UserService implements IPatientService {
           },
         },
         {
+          $lookup: {
+            from: Language.collection.name,
+            localField: 'languages',
+            foreignField: '_id',
+            as: 'languages',
+          },
+        },
+        {
+          $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
+        },
+        {
           $project: {
             _id: 1,
             avatar: 1,
@@ -99,11 +112,27 @@ class PatientService extends UserService implements IPatientService {
             country: 1,
             timezone: 1,
             currency: 1,
-            languages: 1,
+            languages: { $ifNull: ['$languages', null] },
             speciality: 1,
           },
         },
       ];
+
+      pipeline.push({
+        $group: {
+          _id: '$_id',
+          avatar: { $first: '$avatar' },
+          fullName: { $first: '$fullName' },
+          rating: { $first: '$rating' },
+          ratedCount: { $first: '$ratedCount' },
+          gender: { $first: '$gender' },
+          country: { $first: '$country' },
+          timezone: { $first: '$timezone' },
+          currency: { $first: '$currency' },
+          speciality: { $first: '$speciality' },
+          languages: { $push: '$languages' }, // Aggregate languages into an array
+        },
+      });
 
       const sortField = userFilters.sortField ? userFilters.sortField : 'raiting';
 

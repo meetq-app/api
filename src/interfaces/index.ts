@@ -7,4 +7,5 @@ export { IDoctorRaiting } from './doctor-raiting.interface';
 export { IDoctor } from './doctor.interface';
 export { IMeeting } from './meeting.interface';
 export { ICurrency } from './currency.interface';
+export { Ilanguage } from './language.interface';
 

@@ -132,7 +132,7 @@ router
               throw new Error('Languages must be an array');
             }
 
-            if (value.some((lang) => !Object.values(userLanguage).includes(lang))) {
+            if (value.some((lang) => typeof lang !== 'string')) {
               throw new Error('Invalid language detected');
             }
 

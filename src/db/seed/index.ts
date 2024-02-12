@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import offeringSeed from './offering.seed';
 import currencySeed from './currency.seed';
+import languageSeed from './language.seed';
 dotenv.config();
 
 //@ts-ignore
@@ -11,6 +12,7 @@ async function startSeed() {
   try {
     await offeringSeed();
     await currencySeed();
+    await languageSeed();
     console.log('all seeds has passed successfully.');
   } catch (error) {
     console.error('Error seeding:', error);
