@@ -16,7 +16,6 @@ export abstract class UserService implements IUserService {
   userVerificationTTL = 900; // 15 minutes
 
   async findUserById(id: Types.ObjectId, role: userRole = userRole.PATIENT): Promise<Document> {
-    
     id = new Types.ObjectId(id);
     const pipeline: any[] = [
       {
@@ -62,43 +61,36 @@ export abstract class UserService implements IUserService {
         },
       },
       { $limit: 1 },
-    ]
+    ];
 
-    if (role === userRole.PATIENT){
-      pipeline.push({
-        $group: {
-          _id: '$_id',
-          avatar: { $first: '$avatar' },
-          email: { $first: '$email' },
-          balance: { $first: { $toString: '$balance' } },
-          fullName: { $first: '$fullName' },
-          gender: { $first: '$gender' },
-          country: { $first: '$country' },
-          timezone: { $first: '$timezone' },
-          currency: { $first: '$currency' },
-        },
-      }); 
-    } else{
-      pipeline.push({
-        $group: {
-          _id: '$_id',
-          avatar: { $first: '$avatar' },
-          email: { $first: '$email' },
-          balance: { $first: { $toString: '$balance' } },
-          fullName: { $first: '$fullName' },
-          rating: { $first: '$rating' },
-          ratedCount: { $first: '$ratedCount' },
-          gender: { $first: '$gender' },
-          country: { $first: '$country' },
-          timezone: { $first: '$timezone' },
-          info: { $first: '$info' },
-          currency: { $first: '$currency' },
-          certificates: { $first: '$certificates' },
-          speciality: { $first: '$speciality' },
-          languages: { $push: '$languages' }, 
-        },
-      });
+    let group: any = {
+      _id: '$_id',
+      avatar: { $first: '$avatar' },
+      email: { $first: '$email' },
+      balance: { $first: { $toString: '$balance' } },
+      fullName: { $first: '$fullName' },
+      gender: { $first: '$gender' },
+      country: { $first: '$country' },
+      timezone: { $first: '$timezone' },
+      currency: { $first: '$currency' },
+    };
+
+    if (role === userRole.DOCTOR) {
+      group = {
+        ...group,
+        rating: { $first: '$rating' },
+        ratedCount: { $first: '$ratedCount' },
+        info: { $first: '$info' },
+        currency: { $first: '$currency' },
+        certificates: { $first: '$certificates' },
+        speciality: { $first: '$speciality' },
+        languages: { $push: '$languages' },
+      };
     }
+
+    pipeline.push({
+      $group: group,
+    });
 
     const users = await this.userModel.aggregate(pipeline);
     return users[0];
