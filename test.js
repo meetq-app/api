@@ -1,26 +1,35 @@
-const schedule = [
-  { from: '9:00', to: '10:00' },
-  { from: '10:30', to: '11:30' },
-  { from: '12:00', to: '13:00' },
-  { from: '14:00', to: '15:00' },
-];
+const matrix1 = [
+  [1,1,1,0,0,0],
+  [0,1,1,0,0,0],
+  [0,0,0,1,1,0],
+  [0,1,1,0,1,0]
+]
 
-const meets = [
-  { from: '10:30', to: '11:30' },
-  { from: '12:00', to: '13:00' },
-];
+function findObjects(matrix){
+  const objectsCount = 0;
+  const visitedList = [];
 
-function getAvialableTimeSlot(schedule, meets) {
-  const stringifiedSchedule = schedule.map((s) => `${s.from}-${s.to}`);
-  const stringifiedMeets = meets.map((m) => `${m.from}-${m.to}`);
-  console.log(stringifiedSchedule, stringifiedMeets);
-  const avialableSlots = stringifiedSchedule.map((timeSlot) => {
-    if (!stringifiedMeets.includes(timeSlot)) {
-      const [from, to] = timeSlot.split('-');
-      return { from, to };
+  for(let i=0; i<matrix.length; i++){
+    for(let j=0; j<matrix[0].length; j++){
+      let count = traverse(matrix, 0, 0, visitedList)
+      if(count > 0)
+        objectsCount++
     }
-  });
-  return avialableSlots.filter(Boolean);
+  }
+  
+  return objectsCount;
 }
 
-console.log(getAvialableTimeSlot(schedule, meets));
+function traverse(matrix, i, j, visitedList, count=0){
+  if(matrix[i][j] === 0 || visitedList[`${i}${j}`])
+    return count
+
+  if(matrix[i][j] === 1){
+    count++
+    visitedList.push(`${i}${j}`)
+    traverse(matrix, i, j+1, visitedList, count)
+    traverse(matrix, i+1, j, visitedList, count)
+  }
+}
+
+console.log(findObjects(matrix1));

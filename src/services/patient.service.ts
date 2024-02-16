@@ -249,6 +249,7 @@ class PatientService extends UserService implements IPatientService {
             country: { $first: '$country' },
             timezone: { $first: '$timezone' },
             currency: { $first: '$currency' },
+            certificates: { $first: '$certificates' },
             speciality: { $first: '$speciality' },
             languages: { $push: '$languages' },
             info: { $first: '$info' },
