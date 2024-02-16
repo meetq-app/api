@@ -1,12 +1,12 @@
 import mongoose, { Schema } from 'mongoose';
+import { appLanguage } from '../enum/app.enum';
 import { ICountry } from "../interfaces";
 
 const countrySchema = new Schema<ICountry>({
   name: {
-    type: String,
-    required: true, 
-    unique: true,   
-    trim: true      
+    [appLanguage.AM]: {type: String, required: true},
+    [appLanguage.RU]: {type: String, required: true},
+    [appLanguage.EN]: {type: String, required: true}
   },
   countryCode: {
     type: String,

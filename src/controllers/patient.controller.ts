@@ -13,7 +13,8 @@ export class PatientController {
   async getPatientInfo(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.currentUser;
-      const patient = await patientService.findUserById(id);
+      const lang = req.lang;
+      const patient = await patientService.findUserById(id, lang);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { patient }));
     } catch (err) {
       return next(err);

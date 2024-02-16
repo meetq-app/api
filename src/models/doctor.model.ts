@@ -35,9 +35,7 @@ const doctorSchema = new Schema<IDoctor>({
     default: activeStatus.ACTIVE,
   },
   currency: Schema.Types.ObjectId,
-  country: {
-    type: String,
-  },
+  country: Schema.Types.ObjectId,
   info: {
     type: String,
   },

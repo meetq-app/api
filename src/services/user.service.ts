@@ -1,4 +1,4 @@
-import { Document, Model, ObjectId, Schema, Types } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { redisClient } from '../db/redis';
@@ -8,6 +8,8 @@ import { userRole } from '../enum/user.enum';
 import { IUserService } from '../interfaces/user-service.interface';
 import Currency from '../models/currency.model';
 import Language from '../models/language.model';
+import Country from '../models/country.model';
+import { appLanguage } from '../enum/app.enum';
 
 export abstract class UserService implements IUserService {
   userModel: Model<Document>;
@@ -15,7 +17,11 @@ export abstract class UserService implements IUserService {
   userVerificationPrefix = 'USER_VERIFY';
   userVerificationTTL = 900; // 15 minutes
 
-  async findUserById(id: Types.ObjectId, role: userRole = userRole.PATIENT): Promise<Document> {
+  async findUserById(
+    id: Types.ObjectId,
+    lang: appLanguage = appLanguage.EN,
+    role: userRole = userRole.PATIENT,
+  ): Promise<Document> {
     id = new Types.ObjectId(id);
     const pipeline: any[] = [
       {
@@ -38,10 +44,21 @@ export abstract class UserService implements IUserService {
         },
       },
       {
+        $lookup: {
+          from: Country.collection.name,
+          localField: 'country',
+          foreignField: '_id',
+          as: 'country',
+        },
+      },
+      {
         $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
       },
       {
         $unwind: { path: '$currency', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $unwind: { path: '$country', preserveNullAndEmptyArrays: true },
       },
       {
         $project: {
@@ -53,11 +70,22 @@ export abstract class UserService implements IUserService {
           ratedCount: 1,
           gender: 1,
           avatar: 1,
+          dateOfBirth: 1,
           speciality: 1,
           currency: { $ifNull: ['$currency', null] },
           info: 1,
           certificates: 1,
           languages: { $ifNull: ['$languages', null] },
+          country: {
+            $ifNull: [
+              {
+                _id: '$country._id',
+                name: `$country.name.${lang}`,
+                countryCode: '$country.countryCode',
+              },
+              null,
+            ],
+          },
         },
       },
       { $limit: 1 },
@@ -69,6 +97,7 @@ export abstract class UserService implements IUserService {
       email: { $first: '$email' },
       balance: { $first: { $toString: '$balance' } },
       fullName: { $first: '$fullName' },
+      dateOfBirth: { $first: '$dateOfBirth' },
       gender: { $first: '$gender' },
       country: { $first: '$country' },
       timezone: { $first: '$timezone' },
@@ -103,7 +132,7 @@ export abstract class UserService implements IUserService {
 
   async createUser(email: string): Promise<Document> {
     try {
-      const user = new this.userModel({ email, fullName: email.split('@')[0] });
+      const user = new this.userModel({ email, fullName: email.split('@')[0], timeZone: '+4' });
       const newUser = await user.save();
       return newUser;
     } catch (err) {

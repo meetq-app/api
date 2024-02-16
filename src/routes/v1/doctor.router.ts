@@ -46,12 +46,12 @@ router
         }
         return true;
       }),
-      body('country').optional().custom((value) => {
-        if (!Object.values(userCountry).includes(value)) {
-          throw new Error('Invalid country value');
-        }
-        return true;
-      }),
+      // body('country').optional().custom((value) => {
+      //   if (!Object.values(userCountry).includes(value)) {
+      //     throw new Error('Invalid country value');
+      //   }
+      //   return true;
+      // }),
       // body('currency').optional().custom((value) => {
       //   if (!Object.values(userCurrency).includes(value)) {
       //     throw new Error('Invalid currency value');

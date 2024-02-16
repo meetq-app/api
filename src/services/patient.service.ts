@@ -66,7 +66,7 @@ class PatientService extends UserService implements IPatientService {
       }
 
       if (userFilters.languages && userFilters.languages.length > 0) {
-        const languages = userFilters.languages.map(l=>(new Types.ObjectId(l)));
+        const languages = userFilters.languages.map((l) => new Types.ObjectId(l));
         matchConditions['languages'] = { $in: languages };
       }
 
@@ -130,7 +130,7 @@ class PatientService extends UserService implements IPatientService {
           timezone: { $first: '$timezone' },
           currency: { $first: '$currency' },
           speciality: { $first: '$speciality' },
-          languages: { $push: '$languages' }, 
+          languages: { $push: '$languages' },
         },
       });
 
@@ -229,10 +229,17 @@ class PatientService extends UserService implements IPatientService {
                 input: '$offerings',
                 as: 'offering',
                 in: {
-                  _id: '$$offering._id',
                   price: '$$offering.price',
-                  name: `$$offering.name.${lang}`,
-                  description: `$$offering.description.${lang}`,
+                  offer: {
+                    _id: '$$offering._id',
+                    name: `$$offering.name.${lang}`,
+                    description: `$$offering.description.${lang}`,
+                  },
+                  currency: { // TODO calculate currency accordingly, get Data from XE api
+                    _id: '65b61d7a8db4edc72edb9361',
+                    code: 'AMD',
+                    symbol: '֏',
+                },
                 },
               },
             },
@@ -323,8 +330,8 @@ class PatientService extends UserService implements IPatientService {
     if (!isSlotAvialable) {
       throw new InsufficientDataError('insufficient time slot', []);
     }
-  
-    await transactionService.patientToDoctorTransaction(patient, doctor, offering.price)
+
+    await transactionService.patientToDoctorTransaction(patient, doctor, offering.price);
 
     const startDate = HelperService.generateStartDateTime(date, timeSlot.from);
 
@@ -442,10 +449,10 @@ class PatientService extends UserService implements IPatientService {
           patientId: 1,
           date: 1,
           timeSlot: 1,
-          price:  { $toString: '$price' },
+          price: { $toString: '$price' },
           status: 1,
           currency: '$currency',
-          offering: { 
+          offering: {
             _id: '$offering._id',
             name: `$offering.name.${userLanguage}`,
             description: `$offering.description.${userLanguage}`,

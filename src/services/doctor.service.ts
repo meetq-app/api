@@ -32,7 +32,7 @@ class DoctorService extends UserService {
     updateData: Partial<Omit<IDoctor, 'balance' | 'email'>>,
   ): Promise<Partial<IDoctor>> {
     try {
-      const doctorToUpdate = await this.findUserById(doctorId);
+      const doctorToUpdate = await Doctor.findById(doctorId);
 
       if (!doctorToUpdate) {
         throw new NotFoundError();

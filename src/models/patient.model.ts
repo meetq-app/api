@@ -22,6 +22,8 @@ const patientSchema = new Schema<IPatient>({
   avatar: {
     type: String,
   },
+  country: Schema.Types.ObjectId,
+  dateOfBirth: Date,
   balance: {
     type: Number,
     default: 0,
