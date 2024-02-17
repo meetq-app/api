@@ -235,11 +235,12 @@ class PatientService extends UserService implements IPatientService {
                     name: `$$offering.name.${lang}`,
                     description: `$$offering.description.${lang}`,
                   },
-                  currency: { // TODO calculate currency accordingly, get Data from XE api
+                  currency: {
+                    // TODO calculate currency accordingly, get Data from XE api
                     _id: '65b61d7a8db4edc72edb9361',
                     code: 'AMD',
                     symbol: '֏',
-                },
+                  },
                 },
               },
             },

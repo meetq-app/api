@@ -43,7 +43,7 @@ router
   .patch(
     '/me',
     auth,
-    cleanseRequest('body', ['fullName', 'gender', 'country', 'timezone', 'currency']),
+    cleanseRequest('body', ['fullName', 'gender', 'country', 'timezone', 'currency', 'dateOfBirth']),
     [
       body('fullName').optional().trim().isLength({ min: 6, max: 40 }),
       body('gender').optional().custom((value) => {
