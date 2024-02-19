@@ -22,6 +22,9 @@ const patientSchema = new Schema<IPatient>({
   avatar: {
     type: String,
   },
+  timezone: {
+    type: String,
+  },
   country: Schema.Types.ObjectId,
   dateOfBirth: Date,
   balance: {
