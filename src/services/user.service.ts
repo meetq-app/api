@@ -77,15 +77,16 @@ export abstract class UserService implements IUserService {
           certificates: 1,
           languages: { $ifNull: ['$languages', null] },
           country: {
-            $ifNull: [
-              {
+            $cond: {
+              if: { $eq: [{ $ifNull: ["$country", null] }, null] },
+              then: null,
+              else: {
                 _id: '$country._id',
                 name: `$country.name.${lang}`,
                 countryCode: '$country.countryCode',
-              },
-              null,
-            ],
-          },
+              }
+            }
+          }
         },
       },
       { $limit: 1 },
