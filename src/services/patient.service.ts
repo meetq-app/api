@@ -9,6 +9,7 @@ import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 import { IPatientService } from '../interfaces/patient-service.interface';
+import Country from '../models/country.model';
 import Currency from '../models/currency.model';
 import DoctorRaiting from '../models/doctor-raiting.model';
 import Doctor from '../models/doctor.model';
@@ -56,7 +57,7 @@ class PatientService extends UserService implements IPatientService {
     }
   }
 
-  async getDoctors(userFilters: IUserFilters): Promise<Partial<IDoctor[]>> {
+  async getDoctors(userFilters: IUserFilters, lang: appLanguage = appLanguage.EN,): Promise<Partial<IDoctor[]>> {
     try {
       const matchConditions = {};
       console.log('userFilters', userFilters);
@@ -99,7 +100,18 @@ class PatientService extends UserService implements IPatientService {
           },
         },
         {
+          $lookup: {
+            from: Country.collection.name,
+            localField: 'country',
+            foreignField: '_id',
+            as: 'country',
+          },
+        },
+        {
           $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: { path: '$country', preserveNullAndEmptyArrays: true },
         },
         {
           $project: {
@@ -109,9 +121,18 @@ class PatientService extends UserService implements IPatientService {
             raiting: 1,
             raitedCount: 1,
             gender: 1,
-            country: 1,
+            country: {
+              $cond: {
+                if: { $eq: [{ $ifNull: ["$country", null] }, null] },
+                then: null,
+                else: {
+                  _id: '$country._id',
+                  name: `$country.name.${lang}`,
+                  countryCode: '$country.countryCode',
+                }
+              }
+            },
             timezone: 1,
-            currency: 1,
             languages: { $ifNull: ['$languages', null] },
             speciality: 1,
           },
@@ -128,7 +149,6 @@ class PatientService extends UserService implements IPatientService {
           gender: { $first: '$gender' },
           country: { $first: '$country' },
           timezone: { $first: '$timezone' },
-          currency: { $first: '$currency' },
           speciality: { $first: '$speciality' },
           languages: { $push: '$languages' },
         },
@@ -181,7 +201,18 @@ class PatientService extends UserService implements IPatientService {
           },
         },
         {
+          $lookup: {
+            from: Country.collection.name,
+            localField: 'country',
+            foreignField: '_id',
+            as: 'country',
+          },
+        },
+        {
           $unwind: { path: '$languages', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: { path: '$country', preserveNullAndEmptyArrays: true },
         },
         {
           $project: {
@@ -191,9 +222,18 @@ class PatientService extends UserService implements IPatientService {
             raiting: 1,
             raitedCount: 1,
             gender: 1,
-            country: 1,
+            country: {
+              $cond: {
+                if: { $eq: [{ $ifNull: ["$country", null] }, null] },
+                then: null,
+                else: {
+                  _id: '$country._id',
+                  name: `$country.name.${lang}`,
+                  countryCode: '$country.countryCode',
+                }
+              }
+            },
             timezone: 1,
-            currency: 1,
             speciality: 1,
             certificates: 1,
             languages: { $ifNull: ['$languages', null] },
@@ -256,7 +296,6 @@ class PatientService extends UserService implements IPatientService {
             gender: { $first: '$gender' },
             country: { $first: '$country' },
             timezone: { $first: '$timezone' },
-            currency: { $first: '$currency' },
             certificates: { $first: '$certificates' },
             speciality: { $first: '$speciality' },
             languages: { $push: '$languages' },

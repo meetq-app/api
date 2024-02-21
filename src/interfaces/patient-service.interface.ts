@@ -11,7 +11,7 @@ export interface IPatientService {
     patientId: Types.ObjectId,
     updateData: Partial<Omit<IPatient, '_id' | 'balance' | 'email'>>,
   ): Promise<Partial<IPatient>>;
-  getDoctors(userFilters: IUserFilters): Promise<Partial<IDoctor[]>>;
+  getDoctors(userFilters: IUserFilters, lang: appLanguage): Promise<Partial<IDoctor[]>>;
   getDoctor(id: string, lang: appLanguage): Promise<Partial<IDoctor>>;
   getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>>;
   bookMeeting(

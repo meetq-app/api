@@ -45,8 +45,9 @@ export class PatientController {
 
   async getDoctors(req: Request, res: Response, next: NextFunction) {
     try {
+      const {lang} = req;
       //@ts-ignore
-      const doctors = await patientService.getDoctors(req.query as IUserFilters); //TODO temp solution untill impliment validatitions
+      const doctors = await patientService.getDoctors(req.query as IUserFilters, lang); //TODO temp solution untill impliment validatitions
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctors }));
     } catch (err) {
       console.error('error in getting doctors ctrl', err);
