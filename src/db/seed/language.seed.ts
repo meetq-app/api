@@ -22,7 +22,7 @@ export default async function languageSeed() {
       id: 'en',
       title: 'English',
       nativeTitle: 'English',
-      flagUrl: 'https://dev001meetq.fra1.cdn.digitaloceanspaces.com/flags/en.png' 
+      flagUrl: 'https://dev001meetq.fra1.cdn.digitaloceanspaces.com/flags/uk.png' 
     },
   ];
 

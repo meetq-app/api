@@ -4,7 +4,7 @@ import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
 import { transactionType } from '../enum/transaction.enum';
 import { userLanguage, userRole } from '../enum/user.enum';
-import { InsufficientDataError } from '../errors';
+import { InsufficientDataError, InvalidCreedentialsdError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
@@ -348,6 +348,9 @@ class PatientService extends UserService implements IPatientService {
 
     const offering = doctor.offerings.find((o) => o.offerId.equals(offeringId));
     console.log({ offering });
+    if(!offering){
+      throw new InvalidCreedentialsdError("Invalid Offering ID");
+    }
 
     const isDateFitsRequirment = HelperService.checkIfDateFitsBookingRequirments(date, 2);
 
@@ -508,7 +511,13 @@ class PatientService extends UserService implements IPatientService {
             gender: '$doctor.gender',
             country: '$doctor.country',
             timezone: '$doctor.timezone',
-            languages: '$doctor.languages',
+            languages: {
+              $map: {
+                input: "$doctor.languages",
+                as: "lang",
+                in: { _id: "$$lang" }
+              }
+            },
           },
         },
       },

@@ -133,7 +133,12 @@ export abstract class UserService implements IUserService {
 
   async createUser(email: string): Promise<Document> {
     try {
-      const user = new this.userModel({ email, fullName: email.split('@')[0], timeZone: '+4' });
+      const user = new this.userModel({ 
+        email, 
+        fullName: email.split('@')[0], 
+        timeZone: '+4',
+        currency: new Types.ObjectId('65b61d7a8db4edc72edb9361')
+      });
       const newUser = await user.save();
       return newUser;
     } catch (err) {
