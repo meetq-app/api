@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
-import { transactionType } from '../enum/transaction.enum';
 import { userLanguage, userRole } from '../enum/user.enum';
 import { InsufficientDataError, InvalidCreedentialsdError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
@@ -523,11 +522,12 @@ class PatientService extends UserService implements IPatientService {
       },
     ];
 
-    if (filters.sort) {
-      const sortDirection = filters.sort === 'ASC' ? 1 : -1;
-      const sortStage = { $sort: { date: sortDirection } };
-      pipeline.push(sortStage);
-    }
+    let sortStage = { $sort: { date: -1 } };
+
+    if (filters.sort && filters.sort === 'ASC') {
+      sortStage = { $sort: { date: 1 } };
+    } 
+    pipeline.push(sortStage);
 
     if (filters.limit) {
       const limitStage = { $limit: +filters.limit };
