@@ -56,7 +56,10 @@ class PatientService extends UserService implements IPatientService {
     }
   }
 
-  async getDoctors(userFilters: IUserFilters, lang: appLanguage = appLanguage.EN,): Promise<Partial<IDoctor[]>> {
+  async getDoctors(
+    userFilters: IUserFilters,
+    lang: appLanguage = appLanguage.EN,
+  ): Promise<Partial<IDoctor[]>> {
     try {
       const matchConditions = {};
       console.log('userFilters', userFilters);
@@ -122,14 +125,14 @@ class PatientService extends UserService implements IPatientService {
             gender: 1,
             country: {
               $cond: {
-                if: { $eq: [{ $ifNull: ["$country", null] }, null] },
+                if: { $eq: [{ $ifNull: ['$country', null] }, null] },
                 then: null,
                 else: {
                   _id: '$country._id',
                   name: `$country.name.${lang}`,
                   countryCode: '$country.countryCode',
-                }
-              }
+                },
+              },
             },
             timezone: 1,
             languages: { $ifNull: ['$languages', null] },
@@ -223,14 +226,14 @@ class PatientService extends UserService implements IPatientService {
             gender: 1,
             country: {
               $cond: {
-                if: { $eq: [{ $ifNull: ["$country", null] }, null] },
+                if: { $eq: [{ $ifNull: ['$country', null] }, null] },
                 then: null,
                 else: {
                   _id: '$country._id',
                   name: `$country.name.${lang}`,
                   countryCode: '$country.countryCode',
-                }
-              }
+                },
+              },
             },
             timezone: 1,
             speciality: 1,
@@ -313,12 +316,19 @@ class PatientService extends UserService implements IPatientService {
 
   async getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>> {
     const doctorId = new Types.ObjectId(id);
-    const date = new Date(slotsDate);
-    const dayOfWeek = HelperService.getDayOfWeekFromDate(date);
+    const startDate = new Date(slotsDate);
+    const endDate = new Date(slotsDate);
+    endDate.setDate(endDate.getDate() + 1);
+    const dayOfWeek = HelperService.getDayOfWeekFromDate(startDate);
+
+    console.log({ doctorId, startDate, endDate });
 
     const meetings = await Meeting.find({
       doctorId,
-      date,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
       status: { $ne: meetingStatus.CANCELED },
     });
     const doctor = await Doctor.findById(doctorId);
@@ -327,7 +337,7 @@ class PatientService extends UserService implements IPatientService {
       return [];
     }
     const bookedTimeSlots = meetings.map((m) => m.timeSlot);
-    console.log({ meetings, schedule, bookedTimeSlots, date, doctorId });
+    console.log({ meetings, schedule, bookedTimeSlots, doctorId });
 
     const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlots);
     return avialableTimeSlots;
@@ -347,8 +357,8 @@ class PatientService extends UserService implements IPatientService {
 
     const offering = doctor.offerings.find((o) => o.offerId.equals(offeringId));
     console.log({ offering });
-    if(!offering){
-      throw new InvalidCreedentialsdError("Invalid Offering ID");
+    if (!offering) {
+      throw new InvalidCreedentialsdError('Invalid Offering ID');
     }
 
     const isDateFitsRequirment = HelperService.checkIfDateFitsBookingRequirments(date, 2);
@@ -512,10 +522,10 @@ class PatientService extends UserService implements IPatientService {
             timezone: '$doctor.timezone',
             languages: {
               $map: {
-                input: "$doctor.languages",
-                as: "lang",
-                in: { _id: "$$lang" }
-              }
+                input: '$doctor.languages',
+                as: 'lang',
+                in: { _id: '$$lang' },
+              },
             },
           },
         },
@@ -526,7 +536,7 @@ class PatientService extends UserService implements IPatientService {
 
     if (filters.sort && filters.sort === 'ASC') {
       sortStage = { $sort: { date: 1 } };
-    } 
+    }
     pipeline.push(sortStage);
 
     if (filters.limit) {
