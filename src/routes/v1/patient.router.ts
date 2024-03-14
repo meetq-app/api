@@ -157,5 +157,6 @@ router
   .patch('/meetings/finish/:id', auth, checkUserRole(userRole.PATIENT), patientCtrl.finishMeeting)
   .get('/meetings/:status', auth, checkUserRole(userRole.PATIENT), patientCtrl.getMeetings)
   .get('/transactions', auth, checkUserRole(userRole.PATIENT), patientCtrl.getTransactions)
+  .post('/apply-coupon', auth, checkUserRole(userRole.PATIENT), patientCtrl.applyCoupon)
 
 export default router;

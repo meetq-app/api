@@ -16,6 +16,7 @@ import Language from '../models/language.model';
 import Meeting from '../models/meeting.model';
 import Offering from '../models/offering.model';
 import Patient from '../models/patient.model';
+import couponService from './coupon.service';
 import { HelperService } from './helper.service';
 import { sendMail } from './mail.service';
 import transactionService from './transaction.service';
@@ -584,6 +585,12 @@ class PatientService extends UserService implements IPatientService {
 
     await doctorRaiting.save();
     return doctorRaiting;
+  }
+
+  async applyCoupon(patientID: Types.ObjectId, code: string): Promise<string>{
+    const patient = await Patient.findById(patientID);
+    const ammount = await couponService.applyCoupon(code, patient)
+    return ammount;
   }
 }
 

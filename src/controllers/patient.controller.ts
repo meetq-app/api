@@ -137,11 +137,22 @@ export class PatientController {
   async getTransactions(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.currentUser.id;
-      console.log({userId});
       const transactions = await transactionService.getUserTransactions(userId, userRole.PATIENT);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { transactions }));
     } catch (err) {
       console.error('error in getting transactions for patient', err);
+      return next(err);
+    }
+  }
+
+  async applyCoupon(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.currentUser.id;
+      const { code } = req.body
+      const ammount = patientService.applyCoupon(userId, code);
+      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { ammount }));
+    } catch (err) {
+      console.error('error in appling coupon', err);
       return next(err);
     }
   }

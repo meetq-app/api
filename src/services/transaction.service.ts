@@ -117,6 +117,37 @@ class TransactionService {
     return true;
   }
 
+  async couponTransaction(patient: any, amount: number): Promise<boolean> {
+    patient.balance += amount;
+
+    const patientTransaction = new Transaction({
+      doctorId: null,
+      patientId: patient._id,
+      source: "Coupon",
+      ammount: amount,
+      type: transactionType.INCOME,
+      currency: patient.currency,
+      status: transactionStatus.SUCCESS,
+    });
+
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+
+    try {
+      await patient.save();
+      await patientTransaction.save();
+      await session.commitTransaction();
+      console.log('Transaction committed successfully');
+    } catch (error) {
+      await session.abortTransaction();
+      console.error('Transaction aborted due to error:', error);
+    } finally {
+      await session.endSession();
+    }
+
+    return true;
+  }
+
   async meetingCancelationTransaction(patient: any, doctor: any, amount: number): Promise<boolean> {
     
     return true
