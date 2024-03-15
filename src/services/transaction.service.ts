@@ -117,14 +117,16 @@ class TransactionService {
     return true;
   }
 
-  async couponTransaction(patient: any, amount: number): Promise<boolean> {
-    patient.balance += amount;
+  async couponTransaction(patient: any, coupon: any): Promise<boolean> {
+    patient.balance += coupon.ammount;
+    coupon.applyed_by = patient._id;
+    coupon.applyed_date = new Date;
 
     const patientTransaction = new Transaction({
       doctorId: null,
       patientId: patient._id,
       source: "Coupon",
-      ammount: amount,
+      ammount: coupon.ammount,
       type: transactionType.INCOME,
       currency: patient.currency,
       status: transactionStatus.SUCCESS,
@@ -135,12 +137,14 @@ class TransactionService {
 
     try {
       await patient.save();
+      await coupon.save();
       await patientTransaction.save();
       await session.commitTransaction();
       console.log('Transaction committed successfully');
     } catch (error) {
       await session.abortTransaction();
       console.error('Transaction aborted due to error:', error);
+      throw new Error("Something went wrong");
     } finally {
       await session.endSession();
     }

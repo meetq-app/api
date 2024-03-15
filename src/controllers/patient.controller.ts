@@ -149,7 +149,7 @@ export class PatientController {
     try {
       const userId = req.currentUser.id;
       const { code } = req.body
-      const ammount = patientService.applyCoupon(userId, code);
+      const ammount = await patientService.applyCoupon(userId, code);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { ammount }));
     } catch (err) {
       console.error('error in appling coupon', err);

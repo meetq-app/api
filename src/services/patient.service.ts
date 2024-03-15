@@ -588,7 +588,7 @@ class PatientService extends UserService implements IPatientService {
   }
 
   async applyCoupon(patientID: Types.ObjectId, code: string): Promise<string>{
-    const patient = await Patient.findById(patientID);
+    const patient = await Patient.findById(patientID)
     const ammount = await couponService.applyCoupon(code, patient)
     return ammount;
   }
