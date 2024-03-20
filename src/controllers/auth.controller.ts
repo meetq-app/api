@@ -16,6 +16,7 @@ export class AuthController {
     try {
       const { email } = req.body;
       const code = await this.service.generateVerificationCode(email);
+      console.log('Send email', code)
       await sendMail(email, 'Barev dzez', `<h1>your key ${code}</h1>`);
 
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {}));
