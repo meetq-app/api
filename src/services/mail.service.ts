@@ -9,6 +9,9 @@ export async function sendMail(to: string, subject: string, html: string): Promi
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS,
       },
+      tls: {
+        rejectUnauthorized: false 
+      }
     });
 
     await transporter.sendMail({
