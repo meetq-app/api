@@ -63,3 +63,8 @@ export enum speciality {
   PSYCHOTHERAPIST = 'Psychotherapist',
   PSYCHIATRIST = 'Psychiatrist'
 }
+
+export enum timeZoneConvertionType {
+  FROM_TIMEZONE_TO_UTC = 'fromTimezoneToUTC',
+  FROM_UTC_TO_TIMEZONE = 'fromUTCToTimezone'
+}

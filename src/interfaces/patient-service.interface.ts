@@ -13,13 +13,14 @@ export interface IPatientService {
   ): Promise<Partial<IPatient>>;
   getDoctors(userFilters: IUserFilters, lang: appLanguage): Promise<Partial<IDoctor[]>>;
   getDoctor(id: string, lang: appLanguage): Promise<Partial<IDoctor>>;
-  getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>>;
+  getDoctorsTimeSlotsByDate(id: string, slotsDate: string, timezone: number): Promise<Array<TimeSlot>>;
   bookMeeting(
     patientId: Types.ObjectId,
     doctorId: Types.ObjectId,
     date: Date,
     timeSlot: TimeSlot,
     offeringId: Types.ObjectId,
+    timezone: number,
   ): Promise<IMeeting>;
   cancelMeeting(userId: string, id: string, reason: string): Promise<IMeeting>;
   getMeetings(

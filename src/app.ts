@@ -7,7 +7,7 @@ import path from 'path';
 import errorHandler from './services/error-hadlers.serivice';
 import v1 from './routes/v1';
 import payments from './routes/payments';
-import detectLanguage from './middleware/detect-language.middlware';
+import detectUserSettingd from './middleware/detect-language.middlware';
 
 class App {
   public express: express.Application;
@@ -26,7 +26,7 @@ class App {
     this.express.use(helmet());
     // this.express.use(hpp());
     this.express.use(express.static(path.join(__dirname, 'public')));
-    this.express.use(detectLanguage);
+    this.express.use(detectUserSettingd);
   }
 
   private mountRoutes(): void {

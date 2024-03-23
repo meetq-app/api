@@ -70,7 +70,8 @@ export class PatientController {
   async getDoctorsTimeSlots(req: Request, res: Response, next: NextFunction) {
     try {
       const { id: doctorId, date } = req.params;
-      const slots = await patientService.getDoctorsTimeSlotsByDate(doctorId, date);
+      const { timezone } = req;
+      const slots = await patientService.getDoctorsTimeSlotsByDate(doctorId, date, timezone);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { slots }));
     } catch (err) {
       console.error('error in getting avialable time slots', err);
@@ -82,11 +83,12 @@ export class PatientController {
     try {
       const patientId = req.currentUser.id;
       const { slot } = req.body;
+      const { timezone } = req;
       const doctorId = new Types.ObjectId(req.body.doctorId);
       const offerId = new Types.ObjectId(req.body.offerId);
       const date = new Date(req.body.date);
 
-      const meeting = await patientService.bookMeeting(patientId, doctorId, date, slot, offerId);
+      const meeting = await patientService.bookMeeting(patientId, doctorId, date, slot, offerId, timezone);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meeting }));
     } catch (err) {
       console.error('error in booking a meet', err);

@@ -2,6 +2,7 @@ import { respStatus } from '../enum/response.enum';
 import fs from 'fs';
 import { join } from 'path';
 import { Time, TimeSlot } from '../interfaces';
+import { daysOfWeek } from '../interfaces/schedule.interface';
 
 const AWS = require('aws-sdk');
 
@@ -50,16 +51,6 @@ export class HelperService {
 
   static getDayOfWeekFromDate(date: Date): string {
     const dayOfWeek = date.getDay();
-
-    const daysOfWeek = [
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-    ];
     return daysOfWeek[dayOfWeek];
   }
 
@@ -104,15 +95,18 @@ export class HelperService {
     return true;
   }
 
-  static generateStartDateTime(givenDate: Date, givenTime: Time): Date {
+  static generateStartDateTime(givenDate: Date, givenTime: Time, timezone: number): Date {
     const year: number = givenDate.getUTCFullYear();
-    const month: number = givenDate.getUTCMonth() + 1;
+    const month: number = givenDate.getUTCMonth();
     const day: number = givenDate.getUTCDate();
-
     const [hours, minutes] = givenTime.split(':').map(Number);
-    const combinedDateTime: Date = new Date(Date.UTC(year, month - 1, day, hours, minutes));
-    return combinedDateTime;
-  }
+
+    const offsetMillis = timezone * 60 * 60 * 1000;
+    const utcTime = new Date(Date.UTC(year, month, day, hours, minutes));
+    const utc0Time = new Date(utcTime.getTime() - offsetMillis);
+
+    return utc0Time;
+}
 
   static getDateDiffByHour(date1: Date, date2: Date): number {
     const timeDifferenceMs: number = date2.getTime() - date1.getTime();

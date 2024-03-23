@@ -1,8 +1,9 @@
+import moment from 'moment';
 import { Types } from 'mongoose';
 import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
-import { userLanguage, userRole } from '../enum/user.enum';
+import { timeZoneConvertionType, userLanguage, userRole } from '../enum/user.enum';
 import { InsufficientDataError, InvalidCreedentialsdError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
@@ -19,6 +20,7 @@ import Patient from '../models/patient.model';
 import couponService from './coupon.service';
 import { HelperService } from './helper.service';
 import { sendMail } from './mail.service';
+import timezoneService from './timezone.service';
 import transactionService from './transaction.service';
 import { UserService } from './user.service';
 
@@ -315,7 +317,11 @@ class PatientService extends UserService implements IPatientService {
     }
   }
 
-  async getDoctorsTimeSlotsByDate(id: string, slotsDate: string): Promise<Array<TimeSlot>> {
+  async getDoctorsTimeSlotsByDate(
+    id: string,
+    slotsDate: string,
+    timezone: number,
+  ): Promise<Array<TimeSlot>> {
     const doctorId = new Types.ObjectId(id);
     const startDate = new Date(slotsDate);
     const endDate = new Date(slotsDate);
@@ -333,14 +339,28 @@ class PatientService extends UserService implements IPatientService {
       status: { $ne: meetingStatus.CANCELED },
     });
     const doctor = await Doctor.findById(doctorId);
-    const schedule = doctor.schedule[dayOfWeek];
+    const utcSchedule = timezoneService.convertScheduleToUTC(
+      doctor.schedule,
+      timezone,
+      timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
+    );
+    const schedule = utcSchedule[dayOfWeek];
     if (schedule.length === 0) {
       return [];
     }
     const bookedTimeSlots = meetings.map((m) => m.timeSlot);
     console.log({ meetings, schedule, bookedTimeSlots, doctorId });
 
-    const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlots);
+    const bookedTimeSlotsInUTC = bookedTimeSlots.map((slot) =>
+      timezoneService.confertToUTCSlot(
+        dayOfWeek,
+        slot,
+        timezone,
+        timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
+      ).slot
+    );
+
+    const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlotsInUTC);
     return avialableTimeSlots;
   }
 
@@ -350,6 +370,7 @@ class PatientService extends UserService implements IPatientService {
     date: Date,
     timeSlot: TimeSlot,
     offeringId: Types.ObjectId,
+    timezone: number,
   ): Promise<IMeeting> {
     const doctor = await Doctor.findById(doctorId);
     const patient = await Patient.findById(patientId);
@@ -376,8 +397,17 @@ class PatientService extends UserService implements IPatientService {
     const avialableSlots = await this.getDoctorsTimeSlotsByDate(
       doctorId.toString(),
       date.toISOString().slice(0, 10),
+      timezone,
     );
-    console.log({ avialableSlots, timeSlot });
+
+    const dayOfWeek = HelperService.getDayOfWeekFromDate(date);
+    const utcTimeSlot = timezoneService.confertToUTCSlot(
+      dayOfWeek,
+      timeSlot,
+      timezone,
+      timeZoneConvertionType.FROM_TIMEZONE_TO_UTC,
+    );
+    console.log({ avialableSlots, timeSlot, utcTimeSlot: utcTimeSlot.slot });
     const isSlotAvialable = HelperService.checkSlotAvialability(avialableSlots, timeSlot);
 
     if (!isSlotAvialable) {
@@ -386,13 +416,13 @@ class PatientService extends UserService implements IPatientService {
 
     await transactionService.patientToDoctorTransaction(patient, doctor, offering.price);
 
-    const startDate = HelperService.generateStartDateTime(date, timeSlot.from);
+    const startDate = HelperService.generateStartDateTime(date, timeSlot.from, timezone);
 
     const meeting = new Meeting({
       patientId,
       doctorId,
       date: startDate,
-      timeSlot,
+      timeSlot: utcTimeSlot.slot,
       offeringId,
       price: offering.price,
       currency: doctor.currency,
@@ -400,11 +430,13 @@ class PatientService extends UserService implements IPatientService {
 
     await meeting.save();
 
+    const dateInDoctorsTimezone = moment(startDate).add(-5, 'hours').toDate() //Todo users doctors timezone
+    console.log({startDate, dateInDoctorsTimezone})
     sendMail(
       doctor.email,
       'Meeting Booking',
       `${patient.fullName} has booked a meeting
-       on ${meeting.date}`,
+       on ${dateInDoctorsTimezone.toString()} at UTC ${-5}`, 
     );
 
     return meeting;
@@ -587,9 +619,9 @@ class PatientService extends UserService implements IPatientService {
     return doctorRaiting;
   }
 
-  async applyCoupon(patientID: Types.ObjectId, code: string): Promise<string>{
-    const patient = await Patient.findById(patientID)
-    const ammount = await couponService.applyCoupon(code, patient)
+  async applyCoupon(patientID: Types.ObjectId, code: string): Promise<string> {
+    const patient = await Patient.findById(patientID);
+    const ammount = await couponService.applyCoupon(code, patient);
     return ammount;
   }
 }

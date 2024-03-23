@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { userRole } from '../enum/user.enum';
+import { timeZoneConvertionType, userRole } from '../enum/user.enum';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctor, IMeeting } from '../interfaces';
 import Doctor from '../models/doctor.model';
@@ -13,6 +13,7 @@ import { InsufficientDataError } from '../errors';
 import { meetingStatus } from '../enum/meeting.enum';
 import { sendMail } from './mail.service';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
+import timezoneService from './timezone.service';
 
 class DoctorService extends UserService {
   userModel;
@@ -73,9 +74,18 @@ class DoctorService extends UserService {
     }
   }
 
-  async manageSchedule(id: Types.ObjectId, schedule: ISchedule): Promise<ISchedule> {
+  async manageSchedule(
+    id: Types.ObjectId,
+    schedule: ISchedule,
+    timezone: number,
+  ): Promise<ISchedule> {
     try {
-      await this.userModel.findByIdAndUpdate(id, { schedule });
+      const utcSchedule = timezoneService.convertScheduleToUTC(
+        schedule,
+        timezone,
+        timeZoneConvertionType.FROM_TIMEZONE_TO_UTC,
+      );
+      await this.userModel.findByIdAndUpdate(id, { schedule: utcSchedule });
       return schedule;
     } catch (e) {
       throw new Error(e);

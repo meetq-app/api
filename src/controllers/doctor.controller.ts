@@ -56,9 +56,10 @@ export class DoctorController {
   async updateDoctorSchedule(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.currentUser;
+      const { timezone } = req;
       const { schedule } = req.body;
 
-      const updatedSchedule = await doctorService.manageSchedule(id, schedule);
+      const updatedSchedule = await doctorService.manageSchedule(id, schedule, timezone);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, {schedule: updatedSchedule}));
     } catch (err) {
       return next(err);
