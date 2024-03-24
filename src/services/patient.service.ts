@@ -137,7 +137,7 @@ class PatientService extends UserService implements IPatientService {
                 },
               },
             },
-            timezone: 1,
+            timezone: { $toString: '$timezone' },
             languages: { $ifNull: ['$languages', null] },
             speciality: 1,
           },
@@ -238,7 +238,7 @@ class PatientService extends UserService implements IPatientService {
                 },
               },
             },
-            timezone: 1,
+            timezone: { $toString: '$timezone' },
             speciality: 1,
             certificates: 1,
             languages: { $ifNull: ['$languages', null] },
@@ -554,7 +554,7 @@ class PatientService extends UserService implements IPatientService {
             raitedCount: '$doctor.raitedCount',
             gender: '$doctor.gender',
             country: '$doctor.country',
-            timezone: {$toString: '$doctor.timezone'},
+            timezone: { $toString: '$doctor.timezone' },
             languages: {
               $map: {
                 input: '$doctor.languages',
