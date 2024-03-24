@@ -224,7 +224,7 @@ class DoctorService extends UserService {
         timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
       );
       
-      meet.timeSlot = utcSlot;
+      meet.timeSlot = utcSlot.slot;
       meet.date = utcDate;
     });
     return meetings;
