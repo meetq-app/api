@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import constants from '../constants';
 import { appLanguage } from '../enum/app.enum';
 import { meetingStatus } from '../enum/meeting.enum';
-import { timeZoneConvertionType, userLanguage, userRole } from '../enum/user.enum';
+import { timeZoneConvertionType, userRole } from '../enum/user.enum';
 import { InsufficientDataError, InvalidCreedentialsdError } from '../errors';
 import { NotFoundError } from '../errors/not-found.error';
 import { IDoctorRaiting, IPatient, IUserFilters, TimeSlot, IDoctor, IMeeting } from '../interfaces';
