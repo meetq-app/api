@@ -351,13 +351,14 @@ class PatientService extends UserService implements IPatientService {
     const bookedTimeSlots = meetings.map((m) => m.timeSlot);
     console.log({ meetings, schedule, bookedTimeSlots, doctorId });
 
-    const bookedTimeSlotsInUTC = bookedTimeSlots.map((slot) =>
-      timezoneService.confertToUTCSlot(
-        dayOfWeek,
-        slot,
-        timezone,
-        timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
-      ).slot
+    const bookedTimeSlotsInUTC = bookedTimeSlots.map(
+      (slot) =>
+        timezoneService.confertToUTCSlot(
+          dayOfWeek,
+          slot,
+          timezone,
+          timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
+        ).slot,
     );
 
     const avialableTimeSlots = HelperService.getAvialableTimeSlots(schedule, bookedTimeSlotsInUTC);
@@ -430,13 +431,13 @@ class PatientService extends UserService implements IPatientService {
 
     await meeting.save();
 
-    const dateInDoctorsTimezone = moment(startDate).add(-5, 'hours').toDate() //Todo users doctors timezone
-    console.log({startDate, dateInDoctorsTimezone})
+    const dateInDoctorsTimezone = moment(startDate).add(doctor.timezone, 'hours').toDate();
+    console.log({ startDate, dateInDoctorsTimezone });
     sendMail(
       doctor.email,
       'Meeting Booking',
       `${patient.fullName} has booked a meeting
-       on ${dateInDoctorsTimezone.toString()} at UTC ${-5}`, 
+       on ${dateInDoctorsTimezone.toString()} at UTC ${doctor.timezone}`,
     );
 
     return meeting;
@@ -484,10 +485,11 @@ class PatientService extends UserService implements IPatientService {
     patientId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
-    userLanguage: userLanguage,
+    userLanguage: appLanguage,
+    timezone: number,
   ): Promise<Array<IMeeting>> {
     patientId = new Types.ObjectId(patientId);
-
+    
     const pipeline: any = [
       {
         $match: {
@@ -578,6 +580,19 @@ class PatientService extends UserService implements IPatientService {
     }
 
     const meetings = await Meeting.aggregate(pipeline);
+    meetings.forEach((meet) => {
+      const utcDate = moment(meet.date).add(timezone, 'hours').toDate();
+      const dayOfWeek = HelperService.getDayOfWeekFromDate(utcDate);
+      const utcSlot = timezoneService.confertToUTCSlot(
+        dayOfWeek,
+        meet.timeSlot,
+        timezone,
+        timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
+      );
+      
+      meet.timeSlot = utcSlot;
+      meet.date = utcDate;
+    });
     return meetings;
   }
 

@@ -25,7 +25,9 @@ export class PatientController {
     try {
       const { id } = req.currentUser;
       const updatedPatient = await patientService.update(id, req.body);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { patient: updatedPatient }));
+      res
+        .status(200)
+        .send(HelperService.formatResponse(respStatus.SUCCESS, { patient: updatedPatient }));
     } catch (err) {
       return next(err);
     }
@@ -37,7 +39,9 @@ export class PatientController {
       const { avatar } = req.body;
 
       const avatarPath = await patientService.updateAvatar(id, avatar);
-      res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { avatar: avatarPath }));
+      res
+        .status(200)
+        .send(HelperService.formatResponse(respStatus.SUCCESS, { avatar: avatarPath }));
     } catch (err) {
       return next(err);
     }
@@ -45,7 +49,7 @@ export class PatientController {
 
   async getDoctors(req: Request, res: Response, next: NextFunction) {
     try {
-      const {lang} = req;
+      const { lang } = req;
       //@ts-ignore
       const doctors = await patientService.getDoctors(req.query as IUserFilters, lang); //TODO temp solution untill impliment validatitions
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { doctors }));
@@ -88,7 +92,14 @@ export class PatientController {
       const offerId = new Types.ObjectId(req.body.offerId);
       const date = new Date(req.body.date);
 
-      const meeting = await patientService.bookMeeting(patientId, doctorId, date, slot, offerId, timezone);
+      const meeting = await patientService.bookMeeting(
+        patientId,
+        doctorId,
+        date,
+        slot,
+        offerId,
+        timezone,
+      );
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meeting }));
     } catch (err) {
       console.error('error in booking a meet', err);
@@ -125,10 +136,17 @@ export class PatientController {
   async getMeetings(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.currentUser.id;
-      const { lang } = req;
+      const { lang, timezone } = req;
       const { status } = req.params;
-      //@ts-ignore
-      const meetings = await patientService.getMeetings(userId, status, req.query as IMeetingFilters, lang);
+  
+      const meetings = await patientService.getMeetings(
+        userId,
+        status,
+        //@ts-ignore
+        req.query as IMeetingFilters,
+        lang,
+        timezone,
+      );
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { meetings }));
     } catch (err) {
       console.error('error in getting meetings for patient', err);
@@ -150,7 +168,7 @@ export class PatientController {
   async applyCoupon(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.currentUser.id;
-      const { code } = req.body
+      const { code } = req.body;
       const ammount = await patientService.applyCoupon(userId, code);
       res.status(200).send(HelperService.formatResponse(respStatus.SUCCESS, { ammount }));
     } catch (err) {

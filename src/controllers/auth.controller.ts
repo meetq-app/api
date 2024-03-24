@@ -29,6 +29,7 @@ export class AuthController {
   async verifyLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, code } = req.body;
+      const { timezone } = req;
       let isNewUser = false;
       const isValid = await this.service.checkVerifivationCode(email, code);
       if (!isValid) {
@@ -36,7 +37,7 @@ export class AuthController {
       }
       let user = await this.service.findUserByEmail(email);
       if (!user) {
-        user = await this.service.createUser(email);
+        user = await this.service.createUser(email, timezone);
         isNewUser = true;
       }
 

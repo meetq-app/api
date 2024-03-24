@@ -23,7 +23,7 @@ const patientSchema = new Schema<IPatient>({
     type: String,
   },
   timezone: {
-    type: String,
+    type: Number,
   },
   country: Schema.Types.ObjectId,
   dateOfBirth: Date,

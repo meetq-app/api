@@ -8,7 +8,7 @@ export interface IUser{
   gender? : userGender;
   avatar?: string;
   country?: Types.ObjectId;
-  timezone?: string;
+  timezone: number;
   balance: number;
   dateOfBirth?: Date
   currency: Types.ObjectId;

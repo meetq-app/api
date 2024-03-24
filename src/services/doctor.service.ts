@@ -14,6 +14,7 @@ import { meetingStatus } from '../enum/meeting.enum';
 import { sendMail } from './mail.service';
 import { IMeetingFilters } from '../interfaces/meeting-filters.interface';
 import timezoneService from './timezone.service';
+import moment from 'moment';
 
 class DoctorService extends UserService {
   userModel;
@@ -164,6 +165,7 @@ class DoctorService extends UserService {
     doctorId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
+    timezone: number,
   ): Promise<Array<IMeeting>> {
     doctorId = new Types.ObjectId(doctorId);
 
@@ -211,6 +213,20 @@ class DoctorService extends UserService {
     }
 
     const meetings = await Meeting.aggregate(pipeline);
+
+    meetings.forEach((meet) => {
+      const utcDate = moment(meet.date).add(timezone, 'hours').toDate();
+      const dayOfWeek = HelperService.getDayOfWeekFromDate(utcDate);
+      const utcSlot = timezoneService.confertToUTCSlot(
+        dayOfWeek,
+        meet.timeSlot,
+        timezone,
+        timeZoneConvertionType.FROM_UTC_TO_TIMEZONE,
+      );
+      
+      meet.timeSlot = utcSlot;
+      meet.date = utcDate;
+    });
     return meetings;
   }
 }

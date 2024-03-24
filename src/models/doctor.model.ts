@@ -30,6 +30,9 @@ const doctorSchema = new Schema<IDoctor>({
     type: Number,
     default: 0,
   },
+  timezone: {
+    type: Number,
+  },
   activeStatus: {
     type: Number,
     default: activeStatus.ACTIVE,

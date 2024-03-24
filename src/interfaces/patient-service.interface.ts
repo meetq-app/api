@@ -27,7 +27,8 @@ export interface IPatientService {
     patientId: Types.ObjectId,
     status: string,
     filters: IMeetingFilters,
-    lang: userLanguage,
+    lang: appLanguage,
+    timezone: number,
   ): Promise<Array<IMeeting>>;
   finishAndRateMeeting(
     userId: string,
